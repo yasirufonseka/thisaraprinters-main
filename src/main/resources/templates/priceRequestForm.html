@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Request Form - PrintFlow Pro</title>
+    <!-- link bootstrap -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap-5.3.7-dist/css/bootstrap.min.css}">
+    <!-- link css -->
+    <link rel="stylesheet" th:href="@{/css/pricerequestform.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/sweetalert2/sweetalert2.min.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+<div class="app-container">
+    <!-- Sidebar -->
+    <!-- <div th:replace="~{fragments/layout :: sidebar('quotation')}"></div> -->
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Topbar -->
+        <!-- <div th:replace="~{fragments/layout :: topbar}"></div> -->
+
+        <!-- Price Request Form Header -->
+        <div class="top-navbar w-100 d-flex justify-content-center py-3 mb-4 shadow-sm">
+            <div class="d-flex flex-row align-items-center justify-content-between w-75">
+                <h2 class="mb-0 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="35px" viewBox="0 -960 960 960" width="35px" fill="#FFFFFF">
+                        <path d="M280-400h400v-80H280v80Zm0-120h400v-80H280v80Zm0-120h400v-80H280v80ZM160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-480H160v480Zm0 0v-480 480Z"/>
+                    </svg>
+                    <span class="ms-2">Price Request Form</span>
+                </h2>
+            </div>
+        </div>
+
+        <!-- Form Content -->
+        <div class="container-fluid d-flex justify-content-center">
+            <div class="form-card">
+                <div class="form-header">
+                    <h3>Provide Quotation Details</h3>
+                    <p class="form-subtitle">Please fill out the form below with accurate quotation information</p>
+                </div>
+
+                <form id="detailsForm" class="price-form">
+                
+                    <input type="hidden" id="priceRequestId" th:value="${priceRequestId}">
+                    <input type="hidden" id="supplierId" th:value="${supplierId}">
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="unitprice" class="form-label">Unit Price</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">Rs.</span>
+                                <input type="text" id="unitprice" class="form-control" placeholder="Enter unit price"  required>
+                                <div class="text-danger error-message" id="errorMassage"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="deliverCharge" class="form-label">Delivery Charge</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">Rs.</span>
+                                <input type="text" id="deliverCharge" class="form-control" placeholder="Enter delivery charge" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="deliverDate" class="form-label">Delivery Date</label>
+                            <input type="date" id="deliverDate" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalAmount" class="form-label">Total Amount</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">Rs.</span>
+                                <input type="text" id="totalAmount" class="form-control" placeholder="Auto-calculated" readonly required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-primary-custom" onclick="submitForm()">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                <path d="M720-120H280v-520h440v520Zm-40-40v-440H320v440h360ZM480-360q-17 0-28.5-11.5T440-400q0-17 11.5-28.5T480-440q17 0 28.5 11.5T520-400q0 17-11.5 28.5T480-360Zm0-120q-17 0-28.5-11.5T440-520q0-17 11.5-28.5T480-560q17 0 28.5 11.5T520-520q0 17-11.5 28.5T480-480Zm0-120q-17 0-28.5-11.5T440-640q0-17 11.5-28.5T480-680q17 0 28.5 11.5T520-640q0 17-11.5 28.5T480-600ZM160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h280v80H160v560h480v-280h80v280q0 33-23.5 56.5T640-120H160Z"/>
+                            </svg>
+                            Submit Details
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- link jquery -->
+<script th:src="@{/js/jquery-4.0.0.min.js}"></script>
+
+<!-- link sweetalert css and js -->
+<script th:src="@{/sweetalert2/sweetalert2.min.js}"></script>
+
+<!-- link js bootstrap -->
+<script th:src="@{/css/bootstrap-5.3.7-dist/js/bootstrap.bundle.min.js}"></script>
+
+<!-- link common js file -->
+<script th:src="@{/js/common.js}"></script>
+
+<!-- link employee js file -->
+<script th:src="@{/js/pricerequestform.js}"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,317 @@
+.searchBar {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 50px;
+    padding: 10px;
+}
+
+.searchInput {
+    border: none;
+    outline: none;
+    flex: 1;
+    padding-left: 10px;
+    background-color: transparent !important
+}
+
+.searchBar:focus-within {
+    border: 1px solid #0d6efd;
+    outline: 1px solid rgba(13, 110, 253, 0.25);
+    box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.25);
+}
+
+.searchInput::placeholder {
+    color: #7d7c7c;
+}
+
+/* Global Resets and Font */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(180deg, #ECE9E6 0%, #FFFFFF 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+/* Navbar */
+.top-navbar {
+    background-color: #1A1A1A !important;
+}
+
+h2 {
+    font-weight: 700;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Card Styling */
+.main-card {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.card {
+    background-color: #FFFFFF !important;
+    border: none;
+}
+
+/* Table Styling */
+.inventoryTable {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0;
+    animation: slideUpFadeIn 0.8s ease-out;
+}
+
+.inventoryTable thead {
+    background-color: #1B263B;
+    color: #FFFFFF;
+}
+
+.inventoryTable th {
+    padding: 16px 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.inventoryTable tbody tr {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #e8e8e8;
+    transition: background-color 0.2s, transform 0.2s;
+    opacity: 0;
+    animation: slideUpFadeIn 0.5s ease-out forwards;
+}
+
+.inventoryTable tbody tr:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.inventoryTable tbody tr:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.inventoryTable tbody tr:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.inventoryTable tbody tr:nth-child(4) {
+    animation-delay: 0.25s;
+}
+
+.inventoryTable tbody tr:nth-child(5) {
+    animation-delay: 0.3s;
+}
+
+.inventoryTable tbody tr:nth-child(n+6) {
+    animation-delay: 0.35s;
+}
+
+.inventoryTable td {
+    padding: 14px 12px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 0.9rem;
+    color: #333;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.inventoryTable tbody tr:hover {
+    background-color: #E3F2FD;
+}
+
+/* Buttons */
+.btn-gold {
+    background-color: #FFC107 !important;
+    color: #0D1B2A !important;
+    border: none;
+    font-weight: 700;
+    padding: 10px 25px;
+    transition: all 0.2s ease;
+}
+
+.btn-gold:hover {
+    background-color: #FFB300 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-teal {
+    background-color: #17A2B8 !important;
+    border-color: #17A2B8 !important;
+    color: #FFFFFF;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 6px 16px;
+    transition: all 0.2s ease;
+}
+
+.btn-teal:hover {
+    background-color: #138496 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-red {
+    background-color: #DC3545 !important;
+    border-color: #DC3545 !important;
+    color: #FFFFFF;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 6px 16px;
+    transition: all 0.2s ease;
+}
+
+.btn-red:hover {
+    background-color: #C82333 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Animations */
+@keyframes slideUpFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Modal Styling */
+.invModal {
+    max-width: 900px !important;
+    width: 95% !important;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 12px !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    background-color: #1A1A1A;
+    color: #FFFFFF;
+    border-bottom: 1px solid #333;
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-title {
+    font-weight: 700;
+}
+
+.btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.modal-body {
+    padding: 30px;
+    background-color: #FFFFFF;
+}
+
+/* Form Controls */
+.form-label {
+    font-weight: 600;
+    color: #1B263B;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    transition: all 0.3s ease;
+}
+
+.form-select {
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #17A2B8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.2);
+}
+
+.action-btn {
+    width: 180px !important;
+    height: 40px !important;
+    display: inline-block !important;
+}
+
+/* Low Stock Alert */
+.low-stock {
+    background-color: #ffeaea !important;
+    border-left: 5px solid #DC3545;
+}
+
+.badge {
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* Tab Container */
+.tab-container {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 20px;
+}
+
+/* Tab header buttons styling */
+.tab-header {
+    display: flex;
+    gap: 5px;
+}
+
+.tab-btn {
+    padding: 10px 25px;
+    cursor: pointer;
+    border: none;
+    background-color: #1B263B;
+    color: #FFFFFF;
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+    background-color: #FFC107;
+    color: #0D1B2A;
+    font-weight: 700;
+}
+
+.tab-btn:hover {
+    filter: brightness(1.1);
+}
+
+/* Content area styling */
+.tab-content {
+    display: none;
+    padding: 30px;
+    border: 1px solid #dee2e6;
+    background-color: #FFFFFF;
+    border-radius: 0 8px 8px 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}

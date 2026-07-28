@@ -1,0 +1,667 @@
+/* Container ekata background ekak */
+.tab-container {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 20px;
+}
+
+/* Tab header buttons styling */
+.tab-header {
+  display: flex;
+  gap: 5px;
+}
+
+.tab-btn {
+  padding: 10px 25px;
+  cursor: pointer;
+  border: none;
+  background-color: #1B263B;
+  /* Theme: Table Header Row / Dark Indigo Blue */
+  color: #FFFFFF;
+  border-radius: 8px 8px 0 0;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+/* Click karala thiyena tab eka wenas karanna */
+.tab-btn.active {
+  background-color: #FFC107;
+  /* Theme: Add Employee Button / Golden Yellow */
+  color: #0D1B2A;
+  /* Theme: Top Navigation Bar / Midnight Blue */
+  font-weight: 700;
+}
+
+.tab-btn:hover {
+  filter: brightness(1.1);
+}
+
+/* Content area styling */
+.tab-content {
+  display: none;
+  /* Mulinma hide karanawa */
+  padding: 30px;
+  border: 1px solid #dee2e6;
+  background-color: #FFFFFF;
+  /* Theme: Table Rows / White */
+  border-radius: 0 8px 8px 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Image eke thiyena form card eka wage hadanna */
+.form-card {
+  background: #FFFFFF;
+  padding: 30px;
+  border-radius: 15px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  /* Theme Option B: Main Page Background - Light Greyish Blue Gradient */
+  background: linear-gradient(180deg, #ECE9E6 0%, #FFFFFF 100%);
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+/* Navbar */
+.top-navbar {
+  /* Theme Option B: Top Navigation Bar - Midnight Blue */
+  background-color: #1A1A1A !important;
+}
+
+h2 {
+  font-weight: 700;
+  color: #FFFFFF;
+  /* Ensure text is white on dark navbar */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Buttons */
+.btn-gold,
+.btn-teal,
+.btn-danger {
+  border-radius: 6px;
+  padding: 6px 16px;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.btn-teal {
+  background-color: transparent !important;
+  border: 1px solid #17A2B8 !important;
+  color: #17A2B8 !important;
+}
+
+.btn-teal:hover {
+  background-color: #17A2B8 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-danger {
+  background-color: transparent !important;
+  border: 1px solid #DC3545 !important;
+  color: #DC3545 !important;
+}
+
+.btn-danger:hover {
+  background-color: #DC3545 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-gold {
+  display: flex;
+
+  background-color: #078fff !important;
+  border: 2px solid #078fff !important;
+  border-radius: 16px;
+  color: #ffffff !important;
+  font-weight: 500;
+  width: 35%;
+  height: 50px;
+  
+  transition: all 0.2s ease-in-out;
+  
+}
+
+.btn-gold:hover{
+  background-color: #36a2fa !important;
+  color: #f7f7f7 !important;
+  transition:all ease-in 0.2s;
+  box-shadow: 0 8px 10px rgba(233, 233, 233, 0.979);
+}
+
+
+
+/* Table Styles from colour.md */
+.tablestyle thead th {
+  background-color: #1B263B !important;
+  /* Theme: Dark Indigo Blue */
+  color: #FFFFFF !important;
+  border-color: #1B263B !important;
+  vertical-align: middle;
+}
+
+.tablestyle tbody tr {
+  background-color: #FFFFFF !important;
+  /* Theme: White */
+  color: #333;
+  transition: background-color 0.2s;
+}
+
+.tablestyle tbody tr:hover {
+  background-color: #E3F2FD !important;
+  /* Theme: Hover Highlight */
+}
+
+
+/* Table Styling */
+.tablestyle {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0;
+  /* Entrance Animation */
+  animation: slideUpFadeIn 0.8s ease-out;
+}
+
+.tablestyle thead {
+  /* Theme Option B: Table Header Row - Dark Indigo Blue */
+  background-color: #1B263B;
+  color: #FFFFFF;
+}
+
+.tablestyle th {
+  padding: 16px 12px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  border: none;
+}
+
+.tablestyle tbody tr {
+  /* Theme Option B: Table Rows - White */
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #e8e8e8;
+  transition: background-color 0.2s, transform 0.2s;
+
+  /* Staggered Entrance Animation */
+  opacity: 0;
+  animation: slideUpFadeIn 0.5s ease-out forwards;
+}
+
+/* Staggered Delays for first 10 rows */
+.tablestyle tbody tr:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.tablestyle tbody tr:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.tablestyle tbody tr:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.tablestyle tbody tr:nth-child(4) {
+  animation-delay: 0.25s;
+}
+
+.tablestyle tbody tr:nth-child(5) {
+  animation-delay: 0.3s;
+}
+
+.tablestyle tbody tr:nth-child(6) {
+  animation-delay: 0.35s;
+}
+
+.tablestyle tbody tr:nth-child(7) {
+  animation-delay: 0.4s;
+}
+
+.tablestyle tbody tr:nth-child(8) {
+  animation-delay: 0.45s;
+}
+
+.tablestyle tbody tr:nth-child(9) {
+  animation-delay: 0.5s;
+}
+
+.tablestyle tbody tr:nth-child(n+10) {
+  animation-delay: 0.55s;
+}
+
+
+.tablestyle td {
+  padding: 14px 12px;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 0.9rem;
+  color: #333;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.customerSearch {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+/* search client */
+.showSearchedClient {
+  display: flex;
+  flex-direction: row;
+  border: none;
+  gap: 10px;
+}
+
+/* Theme Option B: Table Row Hover Highlight */
+.tablestyle tbody tr:hover {
+  background-color: #E3F2FD;
+  /* Subtle lift effect on hover if desired, but color change is usually enough for rows */
+}
+
+@keyframes slideUpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal Styling to match Elegant Ink Theme */
+.modal-content {
+  border-radius: 15px;
+  /* Softer rounded corners */
+  border: none;
+  /* Remove default border */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  /* Deep shadow for depth */
+  overflow: hidden;
+  /* Ensure header radius is respected */
+}
+
+.modal-header {
+  background-color: #1A1A1A;
+  color: #FFFFFF;
+  border-bottom: 3px solid #FFC107;
+  /* Gold accent line at bottom of header */
+}
+
+.modal-title {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Custom styling for close button to be white on dark background */
+ 
+
+.modal-header .btn-close:hover {
+  opacity: 1;
+}
+
+.modal-body {
+  background-color: #FFFFFF;
+  /* White */
+  padding: 30px;
+}
+
+.modal-footer {
+  background-color: #F8F9FA;
+  /* Slightly off-white for footer to distinguish */
+  border-top: 1px solid #e9ecef;
+}
+
+/* Modal Entrance Animation */
+.modal.fade .modal-dialog {
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  transform: scale(0.9);
+  opacity: 0;
+}
+
+.modal.show .modal-dialog {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Search Client modal text colors */
+#searchCustomerModal .modal-content {
+  background-color: #FFFFFF !important;
+  color: #1B263B !important;
+}
+
+#searchCustomerModal .modal-header {
+  background-color: #0D1B2A !important;
+  color: #FFFFFF !important;
+}
+
+#searchCustomerModal .modal-title {
+  color: #FFFFFF !important;
+}
+
+#searchCustomerModal .modal-body,
+#searchCustomerModal .modal-footer {
+  background-color: #FFFFFF !important;
+  color: #1B263B !important;
+}
+
+#searchCustomerModal .form-label {
+  color: #1B263B !important;
+  font-weight: 700;
+}
+
+#searchCustomerModal .form-control {
+  background-color: #FFFFFF !important;
+  color: #1B263B !important;
+}
+
+#searchCustomerModal .form-control::placeholder {
+  color: #6C757D !important;
+}
+
+#searchCustomerModal .showSearchedClient {
+  color: #1B263B !important;
+}
+
+#searchCustomerModal .showSearchedClient .card {
+  background-color: #FFFFFF !important;
+  border: 1px solid #CED4DA !important;
+  color: #1B263B !important;
+}
+
+#searchCustomerModal .showSearchedClient .card-title {
+  color: #1B263B !important;
+}
+
+#searchCustomerModal .showSearchedClient .card-text,
+#searchCustomerModal .showSearchedClient p {
+  color: #2F3A45 !important;
+}
+
+/* Generate Quotation modal form consistency */
+#generateQuatationModal .modal-dialog {
+  max-width: 1320px;
+}
+
+#generateQuatationModal .modal-content {
+  background-color: #FFFFFF;
+  border-radius: 12px !important;
+  padding: 0 !important;
+}
+
+#generateQuatationModal .modal-header {
+  padding: 18px 24px !important;
+}
+
+#generateQuatationModal .modal-body {
+  padding: 24px;
+}
+
+#generateQuatationModal #quotationForm {
+  row-gap: 18px;
+}
+
+#generateQuatationModal .form-label {
+  color: #1B263B;
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+#generateQuatationModal .form-control,
+#generateQuatationModal .form-select,
+#generateQuatationModal .input-group-text {
+  min-height: 44px;
+  border: 1px solid #CED4DA;
+  border-radius: 8px;
+  color: #1B263B;
+  font-size: 0.95rem;
+  box-shadow: none;
+}
+
+#generateQuatationModal textarea.form-control {
+  min-height: 96px;
+  resize: vertical;
+}
+
+#generateQuatationModal .form-control:focus,
+#generateQuatationModal .form-select:focus {
+  border-color: #17A2B8;
+  box-shadow: 0 0 0 0.18rem rgba(23, 162, 184, 0.18);
+}
+
+#generateQuatationModal .form-control[readonly],
+#generateQuatationModal .form-control:disabled,
+#generateQuatationModal .form-select:disabled {
+  background-color: #F4F6F8;
+  color: #5C6670;
+}
+
+#generateQuatationModal .form-text {
+  color: #6C757D !important;
+  font-size: 0.74rem !important;
+  line-height: 1.25;
+  margin-top: 6px;
+}
+
+#generateQuatationModal .customerSearch {
+  display: flex;
+  gap: 10px;
+}
+
+#generateQuatationModal .customerSearch .form-control {
+  width: 100% !important;
+}
+
+#generateQuatationModal .customerSearch .btn {
+  width: 48px;
+  min-width: 48px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0 !important;
+  padding: 0;
+  border-radius: 8px;
+}
+
+#generateQuatationModal #customSizeWrap .d-flex,
+#generateQuatationModal .col-md-4 > .d-flex.gap-2 {
+  align-items: flex-start;
+  gap: 10px !important;
+}
+
+#generateQuatationModal #customSizeWrap .form-control-sm,
+#generateQuatationModal .input-group-sm .form-control,
+#generateQuatationModal .input-group-sm .input-group-text {
+  min-height: 40px;
+  font-size: 0.9rem;
+}
+
+#generateQuatationModal .input-group .input-group-text {
+  border-radius: 8px 0 0 8px;
+  background-color: #F4F6F8;
+  color: #1B263B;
+  font-weight: 700;
+}
+
+#generateQuatationModal .input-group .form-control {
+  border-radius: 0 8px 8px 0;
+}
+
+#generateQuatationModal .form-check {
+  min-height: 32px;
+  margin-bottom: 6px;
+}
+
+#generateQuatationModal .form-check-input {
+  width: 18px;
+  height: 18px;
+  margin-top: 0.2rem;
+  border-color: #B7C0C8;
+  box-shadow: none;
+}
+
+#generateQuatationModal .form-check-input:checked {
+  background-color: #17A2B8;
+  border-color: #17A2B8;
+}
+
+#generateQuatationModal .form-check-label {
+  color: #1B263B;
+  font-size: 0.94rem;
+}
+
+#generateQuatationModal .cost-input-wrap {
+  max-width: 260px;
+}
+
+#generateQuatationModal .finishing-panel,
+#generateQuatationModal .lamination-card {
+  min-height: 112px;
+  padding: 14px !important;
+  border: 1px solid #DEE2E6 !important;
+  border-radius: 8px !important;
+  background-color: #FFFFFF;
+}
+
+#generateQuatationModal .lamination-card {
+  min-width: 216px;
+}
+
+#generateQuatationModal .lamination-options {
+  gap: 12px !important;
+}
+
+#generateQuatationModal .alert {
+  border-radius: 8px;
+  font-size: 0.86rem !important;
+}
+
+#generateQuatationModal .card.bg-dark {
+  background-color: #1B263B !important;
+  border: 1px solid #FFC107 !important;
+  border-radius: 8px;
+}
+
+#generateQuatationModal .card-title {
+  color: #FFFFFF !important;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 14px !important;
+}
+
+#generateQuatationModal .card .row > [class*="col-"] > .p-2 {
+  min-height: 84px;
+  padding: 12px !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  border-radius: 8px !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+#generateQuatationModal .card .text-muted {
+  color: #DDE3EA !important;
+  font-size: 0.78rem !important;
+  font-weight: 600;
+}
+
+#generateQuatationModal .card .fs-5 {
+  color: #FFFFFF;
+  font-size: 1.25rem !important;
+  line-height: 1.25;
+  margin-top: 6px;
+}
+
+#generateQuatationModal .card #displayPaperCost {
+  color: #20C997 !important;
+}
+
+#generateQuatationModal .card #displayFinishingCost {
+  color: #0DCAF0 !important;
+}
+
+#generateQuatationModal .card #displayServiceCharge {
+  color: #FFC107 !important;
+}
+
+#generateQuatationModal .btn {
+  min-height: 42px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+@media (max-width: 991.98px) {
+  #generateQuatationModal .modal-body {
+    padding: 18px;
+  }
+
+  #generateQuatationModal .col-md-4 > .d-flex.gap-2 {
+    flex-wrap: wrap;
+  }
+
+  #generateQuatationModal .col-md-4 > .d-flex.gap-2 > .flex-fill {
+    flex: 1 1 calc(50% - 10px);
+  }
+}
+
+@media (max-width: 575.98px) {
+  #generateQuatationModal .customerSearch {
+    flex-direction: column;
+  }
+
+  #generateQuatationModal .customerSearch .btn {
+    width: 100%;
+  }
+
+  #generateQuatationModal .col-md-4 > .d-flex.gap-2 > .flex-fill {
+    flex-basis: 100%;
+  }
+}
+
+.searchBar {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 50px;
+    padding: 10px;
+}
+
+.searchInput {
+    border: none;
+    outline: none;
+    flex: 1;
+    padding-left: 10px;
+    background-color: transparent !important
+}
+
+.searchBar:focus-within {
+    border: 1px solid #0d6efd;
+    outline: 1px solid rgba(13, 110, 253, 0.25);
+    box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.25);
+}
+
+.searchInput::placeholder {
+    color: #7d7c7c;
+}
+

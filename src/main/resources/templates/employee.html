@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management - PrintFlow Pro</title>
+    <!-- link bootstrap -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap-5.3.7-dist/css/bootstrap.min.css}">
+    <!-- link css -->
+    <link rel="stylesheet" th:href="@{/css/employee.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/sweetalert2/sweetalert2.min.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+<div class="app-container">
+    <!-- Sidebar -->
+    <!--    uses for set active page in layout html-->
+    <div th:replace="~{fragments/layout :: sidebar('employees')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Topbar -->
+        <div th:replace="~{fragments/layout :: topbar}"></div>
+
+        <!-- employee management header -->
+        <div class="top-navbar w-100 d-flex justify-content-center py-3 mb-4 shadow-sm">
+            <div class="d-flex flex-row align-items-center justify-content-between w-75">
+                <h2 class="mb-0 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="35px" viewBox="0 -960 960 960" width="35px"
+                        fill="#FFFFFF">
+                        <path
+                            d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z" />
+                    </svg>
+                    <span class="ms-2">Employee Management</span>
+                </h2>
+            </div>
+        </div>
+
+        <!-- tab area -->
+        <div class="container-fluid">
+            <div class="tab-container">
+                <div class="tab-header">
+                    <button class="tab-btn active" onclick="openTab(event, 'employeeView')">Employee</button>
+                </div>
+
+                <div id="employeeView" class="tab-content" style="display: block;">
+                    <!-- search bar and add button area -->
+                    <div class="d-flex flex-row align-items-center justify-content-between mb-4">
+                        <div class="searchBar w-100 m-3">
+                            <span class="px-2"><svg xmlns="http://www.w3.org/2000/svg" height="24px"
+                                    viewBox="0 -960 960 960" width="24px" fill="#7d7c7c">
+                                    <path
+                                        d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+                                </svg></span>
+                            <input type="text" class="searchInput" id="searchEmployee" placeholder="Search employees by name, NIC or email..." onkeyup="searchEmployees()">
+                        </div>
+                        <button class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#employeeModal">Add
+                            Employee</button>
+                    </div>
+
+                    <!-- employee table -->
+                    <div class="container-fluid p-0">
+                        <table class="employeeTable">
+                            <thead class="bg-body-secondary">
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>Calling Name</th>
+                                    <th>NIC</th>
+                                    <th>Designation</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="spinner-border text-info" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+    <!-- Employee Modal -->
+    <div class="modal fade" id="employeeModal" tabindex="-1" aria-labelledby="employeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl supModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+                <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-dark" id="employeeModalHeader">Add New Employee</h4>
+                    <button type="reset" class="btn btn-close btn-red border-0" data-bs-dismiss="modal"
+                        aria-label="Close" onclick="resetForm()"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="d-flex flex-row flex-wrap" id="employeeFormData" onsubmit="employeeFormDataListener(event)" autocomplete="off">
+
+                        <!-- GENERAL IDENTITY -->
+                        <div class="w-100 mb-2">
+                            <div class="d-flex align-items-center px-0 py-2 border-bottom">
+                                <span class="section-title">GENERAL IDENTITY</span>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-row flex-wrap w-100">
+                            <div class="uploadArea mb-3 w-100 d-block">
+                                <label  class="form-label">Employee Photo </label>
+                                <div id="uploadArea" class="uploadArea  hover-zoom w-25 border border-2 border-dashed rounded-3 text-center p-4 d-flex flex-column align-items-center justify-content-center text-secondary bg-light cursor-pointer" style="cursor: pointer;">
+                                    <div id="uploadPrompt" class="d-flex align-items-center justify-content-center flex-column">
+                                        <i class="bi bi-image" style="font-size: 3rem;"></i> <p class="mt-2 mb-0 fw-semibold">Click here to upload user photo</p>
+                                        <small class="text-muted mt-2">Supports: JPG, PNG</small>
+                                    </div>
+                                    <input type="file" class="imageInput w-25 h-50 d-none" accept="image/*" name="image" id="imageInput" onchange="previewImage(this)">
+                                    <img id="imagePreview" src="" alt="" srcset="" class="d-none w-100 rounded-3">
+                                </div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="employeeFullName" class="form-label">Full Name</label>
+                                <input type="text" class="form-control w-75" name="fullname" id="employeeFullName" placeholder="e.g. Pasindu Silva" onblur="setCallingName()" required>
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="employeeName" class="form-label">Calling Name</label>
+                                <input type="text" class="form-control w-75" name="callingname" id="employeeName" placeholder="e.g. Pasindu">
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="employeeNIC" class="form-label">NIC / Passport <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control w-75" name="nic" id="employeeNIC" placeholder="e.g. 19924588214V/1234567890" onclick="setBirthDay()" onkeyup="validateNIC()" required>
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="employeeDOB" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control w-75" name="dob" id="employeeDOB" required>
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label class="form-label">Gender <span class="text-danger">*</span></label>
+                                <div class="d-flex flex-row gap-3 pt-1">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="gender" id="radioMale" value="Male">
+                                        <label class="form-check-label" for="radioMale">Male</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="gender" id="radioFemale" value="Female" checked>
+                                        <label class="form-check-label" for="radioFemale">Female</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="jobposition" class="form-label">Job Role <span class="text-danger">*</span></label>
+                                <select class="form-select w-75" name="designationid" id="jobposition" required>
+                                    <option value="" disabled selected>Select Job Role</option>
+                                </select>
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- CONTACT INFORMATION -->
+                        <div class="w-100 mb-2">
+                            <div class="d-flex align-items-center px-0 py-2 border-bottom">
+                                <span class="section-title">CONTACT INFORMATION</span>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-row flex-wrap w-100">
+                            <div class="mb-3 w-50">
+                                <label for="employeeEmail" class="form-label">Work Email <span class="text-danger">*</span></label>
+                                <div class="input-group w-75">
+                                    <span class="input-group-text bg-transparent text-muted"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm320-280L160-640v400h640v-400L480-440Zm0-80 320-200H160l320 200ZM160-640v-80 480-400Z"/></svg></span>
+                                    <input type="email" class="form-control border-start-0" name="email" id="employeeEmail" placeholder="supun@gmail.com" onkeyup="validateEmail()" required>
+                                </div>
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="employeePhone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                <div class="input-group w-75">
+                                    <span class="input-group-text bg-transparent text-muted"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="M798-120q-125 0-247-54.5T329-329Q229-429 174.5-551T120-798q0-18 12-30t30-12h162q14 0 25 9.5t13 22.5l26 140q2 16-1 27t-11 19l-97 98q20 37 47.5 71.5T387-386q31 31 65 57.5t72 48.5l94-94q9-9 23.5-13.5T670-390l138 28q14 4 23 14.5t9 23.5v162q0 18-12 30t-30 12ZM241-600l66-66-17-94h-89q5 41 14 81t26 79Zm358 358q39 17 79.5 27t81.5 13v-88l-94-19-67 67ZM241-600Zm358 358Z"/></svg></span>
+                                    <input type="tel" class="form-control border-start-0" name="phonenumber" id="employeePhone" placeholder="+94 77 012 3456" onkeyup="validateMobileNo()" required>
+                                </div>
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-100">
+                                <label for="address" class="form-label">Residential Address</label>
+                                <textarea class="form-control" name="address" id="address" rows="3" placeholder="124 Gorakana, Keslewatte, Panadura"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- EMERGENCY CONTACT -->
+                        <div class="w-100 mb-2">
+                            <div class="d-flex align-items-center px-0 py-2 border-bottom">
+                                <span class="section-title">EMERGENCY CONTACT</span>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-row flex-wrap w-100">
+                            <div class="mb-3 w-50">
+                                <label for="emgpersonname" class="form-label">Contact Name</label>
+                                <input type="text" class="form-control w-75" name="emgpersonname" id="emgpersonname" placeholder="Full name of contact">
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="emgpersonphonenumber" class="form-label">Phone Number</label>
+                                <div class="input-group w-75">
+                                    <span class="input-group-text bg-transparent text-muted"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="M798-120q-125 0-247-54.5T329-329Q229-429 174.5-551T120-798q0-18 12-30t30-12h162q14 0 25 9.5t13 22.5l26 140q2 16-1 27t-11 19l-97 98q20 37 47.5 71.5T387-386q31 31 65 57.5t72 48.5l94-94q9-9 23.5-13.5T670-390l138 28q14 4 23 14.5t9 23.5v162q0 18-12 30t-30 12ZM241-600l66-66-17-94h-89q5 41 14 81t26 79Zm358 358q39 17 79.5 27t81.5 13v-88l-94-19-67 67ZM241-600Zm358 358Z"/></svg></span>
+                                    <input type="tel" class="form-control border-start-0" name="emgpersonphonenumber" id="emgpersonphonenumber" placeholder="+94 00 000 0000" onkeyup="validateMobileNo()">
+                                </div>
+                            </div>
+                        </div>
+
+                      
+
+                        <!-- Form Action Buttons -->
+                        <div class="mb-3 w-100 d-flex flex-row justify-content-end align-items-center gap-3">
+                            <button type="submit" id="submitButton" class="btn submitButton btn-teal action-btn">Save Employee</button>
+                            <button type="reset" class="btn btn-secondary action-btn" onclick="resetForm()">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- link jquery -->
+    <script th:src="@{/js/jquery-4.0.0.min.js}"></script>
+
+    <!-- link sweetalert css and js -->
+    <script th:src="@{/sweetalert2/sweetalert2.min.js}"></script>
+
+    <!-- link js bootstrap -->
+    <script th:src="@{/css/bootstrap-5.3.7-dist/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- link common js file -->
+    <script th:src="@{/js/common.js}"></script>
+
+    <!-- link employee js file -->
+    <script th:src="@{/js/employee.js}"></script>
+</body>
+
+</html>

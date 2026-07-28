@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management - PrintFlow Pro</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap-5.3.7-dist/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+    <link rel="stylesheet" th:href="@{/sweetalert2/sweetalert2.min.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+<div class="app-container">
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/layout :: sidebar('customers')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Topbar -->
+        <div th:replace="~{fragments/layout :: topbar}"></div>
+
+        <!-- Customer management header -->
+        <div class="top-navbar w-100 d-flex justify-content-center py-3 mb-4 shadow-sm">
+            <div class="d-flex flex-row align-items-center justify-content-between w-75">
+                <h2 class="mb-0 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="35px" viewBox="0 -960 960 960" width="35px"
+                        fill="#FFFFFF">
+                        <path
+                            d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z" />
+                    </svg>
+                    <span class="ms-2">Customer Management</span>
+                </h2>
+            </div>
+        </div>
+
+        <!-- Tab area -->
+        <div class="container-fluid">
+            <div class="tab-container">
+                <div class="tab-header">
+                    <button class="tab-btn active" onclick="openTab(event, 'customersView')">Customers View</button>
+                </div>
+
+                <div id="customersView" class="tab-content" style="display: block;">
+                    <!-- Search bar and Add button area -->
+                    <div class="d-flex flex-row align-items-center justify-content-between mb-4">
+                        <div class="searchBar w-100 m-3">
+                            <span class="px-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#7d7c7c">
+                                    <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+                                </svg>
+                            </span>
+                            <input type="text" class="searchInput" id="customerSearchInput" placeholder="Search Customer" onkeyup="filterCustomers()">
+                        </div>
+                        <div class="d-flex gap-2 me-3">
+                            <button class="btn btn-gold" style="white-space: nowrap;" data-bs-toggle="modal" data-bs-target="#customerModal">Add Customer</button>
+                        </div>
+                    </div>
+
+                    <!-- Customer table -->
+                    <div class="container-fluid p-0">
+                        <table class="supplierTable">
+                            <thead>
+                                <tr>
+                                    <th>Company Name</th>
+                                    <th>Contact Person</th>
+                                    <th>Email</th>
+                                    <th>Phone Number</th>
+                                    <th>Address</th>
+                                    <th>Person Contact</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customerTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="spinner-border text-info" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <div class="mt-2 text-muted">Retrieving customer records...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Customer Modal -->
+<div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl supModal">
+        <div class="modal-content p-4 shadow-lg rounded-4">
+            <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                <h4 class="modal-title text-white" id="customerModalLabel">Add New Customer</h4>
+                <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="d-flex flex-row flex-wrap" id="customerForm" novalidate onsubmit="submitCustomer(event)">
+                    <input type="hidden" id="customerHiddenId" name="id">
+                    <div class="d-flex flex-row flex-wrap w-100">
+                        <div class="mb-3 w-50">
+                            <label for="customerId" class="form-label">Customer ID:</label>
+                            <input type="text" class="form-control w-75" id="customerId" value="Auto-generated" disabled>
+                        </div>
+
+                        <div class="mb-3 w-50">
+                            <label for="companyName" class="form-label">Company Name: <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control w-75" id="companyName" placeholder="Enter company name" required minlength="2" maxlength="100">
+                            <div class="invalid-feedback">Company name is required (between 2 and 100 characters).</div>
+                        </div>
+
+                        <div class="mb-3 w-50">
+                            <label for="companyContact" class="form-label">Company Contact: <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control w-75" id="companyContact" placeholder="Enter company contact (e.g. 0712345678)" required>
+                            <div class="invalid-feedback">A valid 10-digit Sri Lankan phone number starting with 0 is required.</div>
+                        </div>
+
+                        <div class="mb-3 w-50">
+                            <label for="customerEmail" class="form-label">Email: <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control w-75" id="customerEmail" placeholder="Enter email address" required>
+                            <div class="invalid-feedback">Please enter a valid email address.</div>
+                        </div>
+
+                        <div class="mb-3 w-50">
+                            <label for="customerAddress" class="form-label">Address: <span class="text-danger">*</span></label>
+                            <textarea name="Address" id="customerAddress" class="form-control w-75" rows="2" placeholder="Enter company address" required></textarea>
+                            <div class="invalid-feedback">Address is required.</div>
+                        </div>
+
+                        <!-- Contact Person Details Section -->
+                        <div class="w-100 mt-2 mb-3">
+                            <h5 class="border-bottom pb-2" style="font-size: 1.1rem; color: #1B263B;">Contact Person Details (Optional)</h5>
+                        </div>
+
+                        <div class="mb-3 w-50">
+                            <label for="contactPersonName" class="form-label">Person Name:</label>
+                            <input type="text" class="form-control w-75" id="contactPersonName" placeholder="Enter contact person name">
+                        </div>
+
+                        <div class="mb-3 w-50">
+                            <label for="contactPersonContact" class="form-label">Person Contact:</label>
+                            <input type="tel" class="form-control w-75" id="contactPersonContact" placeholder="Enter contact person phone (e.g. 0712345678)">
+                            <div class="invalid-feedback">Phone number must be a valid 10-digit number starting with 0.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 w-100 d-flex flex-row justify-content-end align-items-center gap-3">
+                        <button type="submit" id="customerSubmitButton" class="btn btn-teal action-btn">Add Customer</button>
+                        <button type="reset" class="btn btn-secondary action-btn" onclick="resetCustomerForm()">Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- link jquery -->
+<script th:src="@{/js/jquery-4.0.0.min.js}"></script>
+<!-- link sweetalert -->
+<script th:src="@{/sweetalert2/sweetalert2.min.js}"></script>
+<!-- link common js file -->
+<script th:src="@{/js/common.js}"></script>
+<!-- link customer js file -->
+<script th:src="@{/js/customer.js}"></script>
+<!-- link bootstrap js -->
+<script th:src="@{/css/bootstrap-5.3.7-dist/js/bootstrap.bundle.min.js}"></script>
+
+</body>
+</html>

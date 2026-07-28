@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Management</title>
+    <!-- link bootstrap -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap-5.3.7-dist/css/bootstrap.min.css}">
+    <!-- link css -->
+    <link rel="stylesheet" th:href="@{/css/order.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/sweetalert2/sweetalert2.min.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/layout :: sidebar('orders')}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <div th:replace="~{fragments/layout :: topbar}"></div>
+
+        <!-- order management header -->
+        <div class="top-navbar w-100 d-flex justify-content-center py-3 mb-4 shadow-sm">
+            <div class="d-flex flex-row align-items-center justify-content-between w-75">
+                <h2 class="mb-0 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="35px" viewBox="0 -960 960 960" width="35px" fill="#FFFFFF">
+                        <path d="M280-80q-33 0-56.5-23.5T200-160q0-33 23.5-56.5T280-240q33 0 56.5 23.5T360-160q0 33-23.5 56.5T280-80Zm400 0q-33 0-56.5-23.5T600-160q0-33 23.5-56.5T680-240q33 0 56.5 23.5T760-160q0 33-23.5 56.5T680-80ZM160-760v-80h720v80H160Z" />
+                    </svg>
+                    <span class="ms-2">Order Management</span>
+                </h2>
+            </div>
+        </div>
+
+        <div class="container-fluid">
+            <!-- tab area for quatation and order -->
+            <div class="tab-container">
+                <div class="tab-header">
+                    <button class="tab-btn active" onclick="openTab(event, 'quatation')">Quatation</button>
+                    <button class="tab-btn" onclick="openTab(event, 'order'); loadOrdersTab();">Order</button>
+                </div>
+
+                <div id="quatation" class="tab-content" style="display: block;">
+                    <!-- search bar and add button area -->
+                    <div class="d-flex flex-row align-items-center justify-content-between mb-4">
+                        <div class="searchBar w-100 m-3">
+                            <span class="px-2"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#7d7c7c">
+                                <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+                            </svg></span>
+                            <input type="text" class="searchInput" id="searchQuotation" placeholder="Search quotation by customer or description..." onkeyup="searchQuotations()">
+                        </div>
+                        
+                        <button class="btn btn-gold d-inline-flex align-items-center justify-content-center gap-2 px-3 py-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#generateQuatationModal">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor" class="flex-shrink-0">
+                                <path d="M200-200h560v-367L567-760H200v560Zm0 80q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h400l240 240v400q0 33-23.5 56.5T760-120H200Zm80-160h400v-80H280v80Zm0-160h400v-80H280v80Zm0-160h280v-80H280v80Zm-80 400v-560 560Z"/>
+                            </svg>
+                            <span class="mb-0">Generate Quotation</span>
+                        </button>
+                    </div>
+                    <!-- quatation table --> 
+
+
+                <table class="tablestyle">
+                    <thead class="">
+                        <tr>
+                            <th>Quatation ID</th>
+                            <th>Customer Name</th>
+                            <th>Quatation Date</th>
+                            <th>Quatation Status</th>
+                            <th>Quatation Amount</th>
+                            <th>Quatation Validity</th>
+                            <th>Quatation Description</th>
+                            <th>Quatation Actions</th>
+
+                        </tr>
+                    </thead>
+                    <tbody id="quotationTableBody">
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="spinner-border text-teal" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <div class="mt-2 text-muted">Loading quotations...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+
+            <div id="order" class="tab-content">
+                <h3>Data Table</h3>
+                <!-- quatation table -->
+
+
+                <table class="tablestyle">
+                    <thead class="">
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer Name</th>
+                            <th>Description</th>
+                            <th>Deadline</th>
+                            <th>Priority</th>
+                            <th>Current Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTableBody">
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <div class="spinner-border text-teal" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <div class="mt-2 text-muted">Loading production jobs...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+
+
+                </table>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <!-- quatation model -->
+
+
+    <div class="modal fade " id="generateQuatationModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl  empModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+                <div class="modal-header  d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-white">Generate Quotation</h4>
+                    <button type="button" class="btn btn-close " data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="row g-3" id="quotationForm" onsubmit="submitQuotation(event)">
+                        <!-- Customer Info -->
+<!--                        <div class="col-md-6">-->
+<!--                            <label for="quotationId" class="form-label">Quotation ID</label>-->
+<!--                            <input type="text" class="form-control" id="quotationId" placeholder="Auto-generated"-->
+<!--                                readonly>-->
+<!--                        </div>-->
+                        <div class="col-md-6 position-relative">
+                            <label for="customerName" class="form-label">Customer Name</label>
+                            <div class="customerSearch">
+                                <input type="text" class="form-control w-75" id="customerName"
+                                    placeholder="Enter Customer Name" readonly>
+                                <button type="button" class="btn btn-teal ms-2 "
+                                    onclick="openClientSearch(event,'searchCustomerModal')"><svg
+                                        xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960"
+                                        width="24px" fill="#e3e3e3">
+                                        <path
+                                            d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+                                    </svg>
+
+                                </button>
+
+                            </div>
+                        <div class="errorMessage text-danger" id="customerNameError" style="font-size: 0.8rem; margin-top: 4px; margin-left: 0;"></div>
+
+                        </div>
+
+
+                        <!-- Description -->
+                        <div class="col-12">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" rows="3"
+                                placeholder="Enter Description"></textarea>
+                        </div>
+
+                        <!-- Product Specs -->
+                        <div class="col-md-4 finishing-panel">
+                            <label for="productSize" class="form-label">Product Size</label>
+                            <select class="form-select" id="productSize" onchange="toggleCustomSize(); calculateQuotation()">
+                                <option value="" selected>Select Size</option>
+                                <option value="A3">A3 (11.69" x 16.54")</option>
+                                <option value="A4">A4 (8.27" x 11.69")</option>
+                                <option value="A5">A5 (5.83" x 8.27")</option>
+                                <option value="Letter">Letter (8.5" x 11")</option>
+                                <option value="Legal">Legal (8.5" x 14")</option>
+                                <option value="custom">&#9998; Custom Size</option>
+                            </select>
+                            <!-- Custom size dimension inputs -->
+                            <div id="customSizeWrap" style="display:none;" class="mt-2">
+                                <div class="d-flex gap-2 align-items-center">
+                                    <div class="flex-fill">
+                                        <input type="number" class="form-control form-control-sm" id="customSizeHeight"
+                                            placeholder="Height" min="0" step="0.01" oninput="calculateQuotation()">
+                                        <div class="form-text text-muted" style="font-size:0.72rem;">Height (inches)</div>
+                                    </div>
+                                    <span class="text-muted fw-bold" style="margin-bottom:18px;">&#215;</span>
+                                    <div class="flex-fill">
+                                        <input type="number" class="form-control form-control-sm" id="customSizeWidth"
+                                            placeholder="Width" min="0" step="0.01" oninput="calculateQuotation()">
+                                        <div class="form-text text-muted" style="font-size:0.72rem;">Width (inches)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 finishing-panel">
+                            <label class="form-label">Quantity &amp; Wastage</label>
+                            <div class="d-flex gap-2">
+                                <div class="flex-fill">
+                                    <input type="number" class="form-control" id="quantity" placeholder="Qty" min="0" oninput="calculateQuotation()">
+                                    <div class="form-text text-muted" style="font-size:0.75rem;">Quantity</div>
+                                </div>
+                                <div class="flex-fill">
+                                    <input type="number" class="form-control" id="wastageSheets" placeholder="Wastage" min="0" oninput="calculateQuotation()">
+                                    <div class="form-text text-muted" style="font-size:0.75rem;">Wastage (sheets)</div>
+                                </div>
+                                <div class="flex-fill">
+                                    <input type="number" class="form-control" id="edgeMarginMm" placeholder="Edge Margin" value="10" min="0" step="0.5" oninput="calculateQuotation()">
+                                    <div class="form-text text-muted" style="font-size:0.75rem;">Edge Margin (mm)</div>
+                                </div>
+<!--                                <div class="flex-fill">-->
+<!--                                    <input type="number" class="form-control" id="gutterMm" placeholder="Gutter" value="3" min="0" step="0.5" oninput="calculateQuotation()">-->
+<!--                                    <div class="form-text text-muted" style="font-size:0.75rem;">Gutter (mm)</div>-->
+<!--                                </div>-->
+                            </div>
+                        </div>
+                        <div class="col-md-4 finishing-panel">
+                            <label for="colorType" class="form-label">Color Type</label>
+                            <select class="form-select" id="colorType" onchange="calculateQuotation()">
+                                <option value="4">4 Colours</option>
+                                <option value="3">3 Colours</option>
+                                <option value="2">2 Colours</option>
+                                <option value="1">1 Colours</option>
+                            </select>
+                        </div>
+
+                        <!-- Materials and Paper Rate -->
+                        <div class="col-md-8">
+                            <label for="materials" class="form-label">Materials</label>
+                            <select class="form-select" id="materials" onchange="onMaterialChange()">
+                                <option value="" selected>Select Material</option>
+                                <option th:each="material : ${materialList}" 
+                                        th:value="${material.id}" 
+                                        th:data-width="${material.width}" 
+                                        th:data-height="${material.height}"
+                                        th:data-price="${material.sheetRate != null ? material.sheetRate : 0.0}"
+                                        th:text="${material.material.material} + ' - ' + ${material.gsm} + ' GSM (' + ${material.width} + 'x' + ${material.height} + ' mm) - Rs. ' + ${#numbers.formatDecimal(material.sheetRate, 1, 2)} + '/sheet'"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="paperRatePerSheet" class="form-label d-flex justify-content-between align-items-center">
+                                <span>Paper Rate Per Sheet (Rs.)</span>
+                                <span id="paperRateBadge" class="badge bg-secondary" style="font-size: 0.75rem; display: none;">Dynamic</span>
+                            </label>
+                            <input type="number" class="form-control" id="paperRatePerSheet" placeholder="0.00" step="0.01" min="0" oninput="onPaperRateManualInput()">
+                        </div>
+                        <div class="col-md-4 mt-2">
+                            <label for="impressionCost" class="form-label">Impression Cost (Rs.) <small class="text-muted">— ink, plates, chemicals</small></label>
+                            <input type="number" class="form-control" id="impressionCost" placeholder="0.00" step="0.01" min="0" oninput="calculateQuotation()">
+                        </div>
+                        <div class="col-12 mt-2">
+                            <div id="impositionError" class="alert alert-danger py-2 px-3 mb-0" style="display:none; font-size:0.85rem;"></div>
+                        </div>
+
+                        <!-- Finishing Options -->
+                        <div class="col-md-4">
+                            <label class="form-label d-block fw-bold">Binding</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="binding" id="bindingPerfect"
+                                    value="perfect" onchange="toggleCostInput('bindingCostWrap'); calculateQuotation()">
+                                <label class="form-check-label" for="bindingPerfect">Perfect</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="binding" id="bindingSpiral"
+                                    value="spiral" onchange="toggleCostInput('bindingCostWrap'); calculateQuotation()">
+                                <label class="form-check-label" for="bindingSpiral">Spiral</label>
+                            </div>
+                            <div id="bindingCostWrap" class="cost-input-wrap mt-2" style="display:none;">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Rs.</span>
+                                    <input type="number" class="form-control" id="bindingCostPerSheet" placeholder="Cost per sheet" min="0" step="0.01" oninput="calculateQuotation()">
+                                </div>
+                                <div class="form-text text-muted" style="font-size:0.75rem;">Cost per sheet</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label d-block fw-bold">Cutting</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="cuttingDie" value="die-cutting" onchange="toggleCostInputByCheckboxGroup('cuttingCostWrap', ['cuttingDie','cuttingGill']); calculateQuotation()">
+                                <label class="form-check-label" for="cuttingDie">Die Cutting</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="cuttingGill" value="gillnetting" onchange="toggleCostInputByCheckboxGroup('cuttingCostWrap', ['cuttingDie','cuttingGill']); calculateQuotation()">
+                                <label class="form-check-label" for="cuttingGill">Gillnetting</label>
+                            </div>
+                            <div id="cuttingCostWrap" class="cost-input-wrap mt-2" style="display:none;">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Rs.</span>
+                                    <input type="number" class="form-control" id="cuttingCostPerSheet" placeholder="Cost per sheet" min="0" step="0.01" oninput="calculateQuotation()">
+                                </div>
+                                <div class="form-text text-muted" style="font-size:0.75rem;">Cost per sheet</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label d-block fw-bold">Foiling</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="foilingUv" value="uv-spot" onchange="toggleCostInputByCheckboxGroup('foilingCostWrap', ['foilingUv','foilingNormal']); calculateQuotation()">
+                                <label class="form-check-label" for="foilingUv">UV Spot</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="foilingNormal"
+                                    value="normal-foiling" onchange="toggleCostInputByCheckboxGroup('foilingCostWrap', ['foilingUv','foilingNormal']); calculateQuotation()">
+                                <label class="form-check-label" for="foilingNormal">Normal Foiling</label>
+                            </div>
+                            <div id="foilingCostWrap" class="cost-input-wrap mt-2" style="display:none;">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Rs.</span>
+                                    <input type="number" class="form-control" id="foilingCostPerSheet" placeholder="Cost per sheet" min="0" step="0.01" oninput="calculateQuotation()">
+                                </div>
+                                <div class="form-text text-muted" style="font-size:0.75rem;">Cost per sheet</div>
+                            </div>
+                        </div>
+
+                        <!-- Lamination -->
+                        <div class="col-12 mt-3">
+                            <label class="form-label fw-bold">Lamination</label>
+                            <div class="d-flex gap-4 flex-wrap align-items-start lamination-options">
+                                <!-- Thermal Group -->
+                                <div class="border p-2 rounded lamination-card">
+                                    <span class="fw-semibold d-block mb-1">Thermal</span>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="lamination"
+                                            id="laminationThermalGloss" value="thermal-gloss" onchange="toggleLaminationCost(); calculateQuotation()">
+                                        <label class="form-check-label" for="laminationThermalGloss">Gloss</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="lamination"
+                                            id="laminationThermalMat" value="thermal-mat" onchange="toggleLaminationCost(); calculateQuotation()">
+                                        <label class="form-check-label" for="laminationThermalMat">Mat</label>
+                                    </div>
+                                    <div id="laminationThermalCostWrap" class="cost-input-wrap mt-2" style="display:none;">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">Rs.</span>
+                                            <input type="number" class="form-control" id="laminationThermalCostPerSheet" placeholder="Cost per sheet" min="0" step="0.01" oninput="calculateQuotation()">
+                                        </div>
+                                        <div class="form-text text-muted" style="font-size:0.75rem;">Cost per sheet</div>
+                                    </div>
+                                </div>
+                                <!-- Normal Group -->
+                                <div class="border p-2 rounded lamination-card">
+                                    <span class="fw-semibold d-block mb-1">Normal</span>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="lamination"
+                                            id="laminationNormalGloss" value="normal-gloss" onchange="toggleLaminationCost(); calculateQuotation()">
+                                        <label class="form-check-label" for="laminationNormalGloss">Gloss</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="lamination"
+                                            id="laminationNormalMat" value="normal-mat" onchange="toggleLaminationCost(); calculateQuotation()">
+                                        <label class="form-check-label" for="laminationNormalMat">Mat</label>
+                                    </div>
+                                    <div id="laminationNormalCostWrap" class="cost-input-wrap mt-2" style="display:none;">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">Rs.</span>
+                                            <input type="number" class="form-control" id="laminationNormalCostPerSheet" placeholder="Cost per sheet" min="0" step="0.01" oninput="calculateQuotation()">
+                                        </div>
+                                        <div class="form-text text-muted" style="font-size:0.75rem;">Cost per sheet</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order & Delivery -->
+                        <div class="col-md-6 mt-3">
+                            <label for="expiryDate" class="form-label">Quotation Expiry Date</label>
+                            <input type="date" class="form-control" id="expiryDate">
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label for="orderType" class="form-label">Order Type</label>
+                            <select class="form-select" id="orderType" onchange="toggleDeliveryFields()">
+                                <option value="pickup">Pickup</option>
+                                <option value="delivery">Delivery</option>
+                            </select>
+                        </div>
+
+                        <!-- Conditional Delivery -->
+                        <div class="col-md-6 delivery-field" style="display: none;">
+                            <label for="deliveryDate" class="form-label">Delivery Date</label>
+                            <input type="date" class="form-control" id="deliveryDate">
+                        </div>
+                        <div class="col-md-12 delivery-field" style="display: none;">
+                            <label for="deliveryAddress" class="form-label">Delivery Address</label>
+                            <textarea class="form-control" id="deliveryAddress" rows="2"
+                                placeholder="Enter Delivery Address"></textarea>
+                        </div>
+
+                        <!-- Cost Breakdown Summary Display -->
+                        <div class="col-12 mt-3">
+                            <div class="card bg-dark text-white border-gold shadow-sm">
+                                <div class="card-body p-3">
+                                    <h5 class="card-title text-gold mb-3" style="font-family: 'Outfit', sans-serif;">Cost Breakdown Summary</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-3">
+                                            <div class="p-2 border border-secondary rounded bg-opacity-10 bg-white">
+                                                <div class="text-muted" style="font-size: 0.8rem;">Total Sheets Needed</div>
+                                                <div class="fs-5 fw-bold" id="displayTotalSheets">0</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="p-2 border border-secondary rounded bg-opacity-10 bg-white">
+                                                <div class="text-muted" style="font-size: 0.8rem;">Paper Cost (Rs.)</div>
+                                                <div class="fs-5 fw-bold text-success" id="displayPaperCost">0.00</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="p-2 border border-secondary rounded bg-opacity-10 bg-white">
+                                                <div class="text-muted" style="font-size: 0.8rem;">Finishing Cost (Rs.)</div>
+                                                <div class="fs-5 fw-bold text-info" id="displayFinishingCost">0.00</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="p-2 border border-secondary rounded bg-opacity-10 bg-white">
+                                                <div class="text-muted" style="font-size: 0.8rem;">Service Charge (25% Markup)</div>
+                                                <div class="fs-5 fw-bold text-warning" id="displayServiceCharge">0.00</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pricing -->
+                        <div class="col-md-4 mt-3">
+                            <label for="unitPrice" class="form-label">Unit Price (Rs.)</label>
+                            <input type="number" class="form-control" id="unitPrice" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <label for="serviceCharge" class="form-label">Service Charge</label>
+                            <input type="text" class="form-control" id="serviceCharge" value="25%" readonly>
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <label for="totalPrice" class="form-label">Total Price (Rs.)</label>
+                            <input type="number" class="form-control" id="totalPrice" placeholder="0.00" readonly step="0.01">
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="col-12 text-end mt-4 d-flex justify-content-end gap-2">
+                            <button type="submit" class="btn btn-teal">Generate Quotation</button>
+                            <button type="reset" class="btn btn-secondary" onclick="setTimeout(calculateQuotation, 0)">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <!-- search client Model -->
+        <div class="modal fade" id="searchCustomerModal" tabindex="-1" aria-labelledby="searchCustomerModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Search Client</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            onclick="closeSearchModel(event, 'searchCustomerModal')"></button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-6">
+                                    <label for="clientName" class="form-label">Client Name</label>
+                                    <input type="text"  class="form-control" id="clientName"
+                                        onkeyup="searchClient()">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="showSearchedClient " id="showSearchedClient" onclick="selectedClient()">
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                            onclick="closeSearchModel(event, 'searchCustomerModal')">Close</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+            <script th:inline="javascript">
+                 window.globalCustomer = /*[[${customerList}]]*/ [];
+            </script>
+
+
+        <!-- link jquery -->
+        <script th:src="@{/js/jquery-4.0.0.min.js}"></script>
+
+        <!-- link sweetalert css and js -->
+
+        <script th:src="@{/sweetalert2/sweetalert2.min.js}"></script>
+
+        <!-- link common js file -->
+        <script th:src="@{/js/common.js}"></script>
+        <!-- get suppliers details into js file-->
+
+
+
+        <!-- link user js file -->
+        <script th:src="@{/js/order.js}"></script>
+
+        <!-- link js bootstrap -->
+        <script th:src="@{/css/bootstrap-5.3.7-dist/js/bootstrap.bundle.min.js}"></script>
+
+        </main><!-- end main-content -->
+    </div><!-- end app-container -->
+
+</body>
+
+</html>

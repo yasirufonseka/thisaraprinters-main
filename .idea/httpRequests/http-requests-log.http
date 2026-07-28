@@ -1,0 +1,92 @@
+GET http://localhost:8080/employees/get/designations
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2026.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: JSESSIONID=23203281616D32146131890B340A7651
+
+<> 2026-07-25T122407.200.json
+
+###
+
+GET http://localhost:8080/employees/get/designations
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2026.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: JSESSIONID=23203281616D32146131890B340A7651
+
+###
+
+GET http://localhost:8080/employees/get/designations
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2026.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: JSESSIONID=20D277073CCE135066DDBC8ED69F1C5F
+
+###
+
+GET http://localhost:8080/employees/get/designations
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2026.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: JSESSIONID=20D277073CCE135066DDBC8ED69F1C5F
+
+###
+
+GET http://localhost:8080/employees/get/designations
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2026.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: JSESSIONID=20D277073CCE135066DDBC8ED69F1C5F
+
+###
+
+GET http://localhost:8080/employees/get/designations
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2026.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+cookie: JSESSIONID=20D277073CCE135066DDBC8ED69F1C5F
+
+<> 2026-07-25T110115.200.html
+
+###
+
+GET http://localhost:8080/employees/get/designations
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2026.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+cookie: JSESSIONID=20D277073CCE135066DDBC8ED69F1C5F
+
+<> 2026-07-25T104201.200.html
+
+###
+
+GET http://localhost:8080/employees/get/designations
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2026.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+cookie: JSESSIONID=20D277073CCE135066DDBC8ED69F1C5F
+
+<> 2026-07-25T104143.200.html
+
+###
+
+GET http://localhost:8080/user/getuser/roles
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2026.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+cookie: JSESSIONID=07E0C4266B8E018D8B6BD38597125235
+
+<> 2026-05-24T135631.200.html
+
+###
+
+GET http://localhost:8080/user/getuser/roles
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2026.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+cookie: JSESSIONID=07E0C4266B8E018D8B6BD38597125235
+
+<> 2026-05-24T135041.200.html
+
+###
+

@@ -1,0 +1,221 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(180deg, #ECE9E6 0%, #FFFFFF 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+/* Navbar */
+.top-navbar {
+    background-color: #1A1A1A !important;
+}
+
+h2 {
+    font-weight: 700;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Main Content Card */
+.main-card {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: none;
+    padding: 20px;
+}
+
+/* Search Bar */
+.searchBar {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 50px;
+    padding: 10px;
+    background-color: white;
+}
+
+.searchInput {
+    border: none;
+    outline: none;
+    flex: 1;
+    padding-left: 10px;
+    background-color: transparent !important
+}
+
+.searchBar:focus-within {
+    border: 1px solid #0d6efd;
+    outline: 1px solid rgba(13, 110, 253, 0.25);
+    box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.25);
+}
+
+.searchInput::placeholder {
+    color: #7d7c7c;
+}
+
+/* Table Styling */
+.productionTable {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: visible;
+    /* Allow dropdowns to overflow */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0;
+}
+
+.productionTable thead {
+    background-color: #1B263B;
+    color: #FFFFFF;
+}
+
+.productionTable th {
+    padding: 16px 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.productionTable tbody tr {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #e8e8e8;
+    transition: background-color 0.2s;
+}
+
+.productionTable td {
+    padding: 14px 12px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 0.9rem;
+    color: #333;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.productionTable tbody tr:hover {
+    background-color: #E3F2FD;
+}
+
+/* Priority Styles for Table Rows or Indicators */
+.priority-urgent {
+    border-left: 5px solid #dc3545;
+    background-color: #fff5f5 !important;
+}
+
+.priority-high {
+    border-left: 5px solid #ffc107;
+}
+
+/* Dropdown in Table */
+.status-select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    background-color: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    width: 100%;
+    max-width: 180px;
+}
+
+.status-select:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Helper classes for status colors in dropdown text (optional) */
+.status-new {
+    color: #6c757d;
+}
+
+.status-design {
+    color: #17a2b8;
+}
+
+.status-print {
+    color: #ffc107;
+}
+
+.status-finish {
+    color: #fd7e14;
+}
+
+.status-ready {
+    color: #28a745;
+}
+
+/* Buttons */
+/* Buttons */
+.btn-gold,
+.btn-teal,
+.btn-red,
+.btn-edit,
+.btn-delete {
+    border-radius: 6px;
+    padding: 6px 16px;
+    transition: all 0.2s ease;
+    font-weight: 600;
+}
+
+.btn-teal,
+.btn-edit {
+    background-color: transparent !important;
+    border: 1px solid #17A2B8 !important;
+    color: #17A2B8 !important;
+}
+
+.btn-teal:hover,
+.btn-edit:hover {
+    background-color: #17A2B8 !important;
+    color: #FFFFFF !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-red,
+.btn-delete {
+    background-color: transparent !important;
+    border: 1px solid #DC3545 !important;
+    color: #DC3545 !important;
+}
+
+.btn-red:hover,
+.btn-delete:hover {
+    background-color: #DC3545 !important;
+    color: #FFFFFF !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-gold {
+    background-color: transparent !important;
+    border: 1px solid #FFC107 !important;
+    color: #FFC107 !important;
+}
+
+.btn-gold:hover {
+    background-color: #FFC107 !important;
+    color: #0D1B2A !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.badge {
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}

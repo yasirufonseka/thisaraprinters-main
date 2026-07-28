@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Management</title>
+    <!-- link bootstrap -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap-5.3.7-dist/css/bootstrap.min.css}">
+    <!-- link css -->
+    <link rel="stylesheet" th:href="@{/css/supplier.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/sweetalert2/sweetalert2.min.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+<div class="app-container">
+    <!-- Sidebar -->
+    <!--    uses for set active page in layout html-->
+    <div th:replace="~{fragments/layout :: sidebar('suppliers')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Topbar -->
+        <div th:replace="~{fragments/layout :: topbar}"></div>
+
+    <!-- supplier management header -->
+
+    <div class="top-navbar w-100 d-flex justify-content-center py-3 mb-4 shadow-sm">
+        <div class="d-flex flex-row align-items-center justify-content-between w-75">
+            <h2 class="mb-0 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" height="35px" viewBox="0 -960 960 960" width="35px"
+                    fill="#FFFFFF">
+                    <path
+                        d="M560-440h200v-80H560v80Zm0-120h200v-80H560v80ZM200-320h320v-22q0-45-44-71.5T360-440q-72 0-116 26.5T200-342v22Zm160-160q33 0 56.5-23.5T440-560q0-33-23.5-56.5T360-640q-33 0-56.5 23.5T280-560q0 33 23.5 56.5T360-480ZM160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-480H160v480Zm0 0v-480 480Z" />
+                </svg>
+                <span class="ms-2">Supplier Management</span>
+            </h2>
+
+            </h2>
+        </div>
+    </div>
+
+    <!-- tab area for suppliers and payments -->
+    <div class="container-fluid">
+        <div class="tab-container">
+            <div class="tab-header">
+                <button class="tab-btn active" onclick="openTab(event, 'suppliersView')">Suppliers View</button>
+                <button class="tab-btn" onclick="openTab(event, 'priceRequestsView')">Price Requests</button>
+                <button class="tab-btn" onclick="openTab(event, 'supplierPayments')">Supplier Payments</button>
+            </div>
+
+            <div id="suppliersView" class="tab-content" style="display: block;">
+                <!-- search bar and add button area -->
+                <div class="d-flex flex-row align-items-center justify-content-between mb-4">
+                    <div class="searchBar w-100 m-3">
+                        <span class="px-2"><svg xmlns="http://www.w3.org/2000/svg" height="24px"
+                                viewBox="0 -960 960 960" width="24px" fill="#7d7c7c">
+                                <path
+                                    d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+                            </svg></span>
+                        <input type="text" class="searchInput" id="search" placeholder="Search Supplier">
+                        <select class="form-select border-0 bg-transparent" id="filterCategory"
+                            style="width: 200px; border-left: 1px solid #ccc !important; border-radius: 0;">
+                            <option value="">All Categories</option>
+                            <option value="Paper">Paper</option>
+                            <option value="Ink">Ink</option>
+                            <option value="Chemicals">Chemicals</option>
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2 me-3">
+                        <button class="btn btn-gold" style="white-space: nowrap;" data-bs-toggle="modal" data-bs-target="#addSupplierModal">Add Supplier</button>
+                        <button class="btn btn-teal" style="white-space: nowrap;" data-bs-toggle="modal" data-bs-target="#priceRequestModal">Price Request</button>
+                    </div>
+                </div>
+
+                <!-- supplier table -->
+                <div class="container-fluid p-0">
+                    <table class="supplierTable">
+                        <thead>
+                            <tr>
+                                <th>Company Name</th>
+                                <th>Contact Person</th>
+                                <th>Email</th>
+                                <th>Phone Number</th>
+                                <th>Address</th>
+                                <th>Material</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- show supplier data -->
+                            <tr th:each = "supplier : ${suppliers}">
+                                <td th:text="${supplier.companyname}"></td>
+                                <td th:text="${supplier.contactperson}">ABC Suppliers</td>
+                                <td th:text="${supplier.email}">Mr. Perera</td>
+                                <td th:text="${supplier.contact}">abc@example.com</td>
+                                <td th:text="${supplier.address}">0771234567</td>
+                                <td > <span th:each="material, stat : ${supplier.materials}">
+        <span th:text="${material.item}"></span><span th:if="${!stat.last}">, </span>
+    </span>
+                                </td>
+                                <td><span class="badge" th:text="${supplier.status}"
+                                  th:class="${supplier.status == 'Active' ? 'badge bg-success' : 'badge bg-danger'}"></span>
+                                </td>
+                                <td class="d-flex flex-row justify-content-center gap-2">
+                                    <button class="btn btn-sm btn-outline-warning" title="Process Payment">Pay</button>
+                                    <button class="btn btn-teal px-3 py-2" th:onclick="|updateSupplier(${supplier.id})|">Edit</button>
+                                    <button class="btn btn-red px-3 py-2">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- price requests tab -->
+            <div id="priceRequestsView" class="tab-content">
+                <div class="d-flex flex-row align-items-center justify-content-between mb-4">
+                    <div class="searchBar w-100 m-3">
+                        <span class="px-2"><svg xmlns="http://www.w3.org/2000/svg" height="24px"
+                                viewBox="0 -960 960 960" width="24px" fill="#7d7c7c">
+                                <path
+                                    d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+                            </svg></span>
+                        <input type="text" class="searchInput" id="searchPriceRequest" placeholder="Search Price Requests">
+                    </div>
+                </div>
+
+                <!-- price request table -->
+                <div class="container-fluid p-0">
+                    <table class="supplierTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Material</th>
+                                <th>Specification</th>
+                                <th>Quantity</th>
+                                <th>Deadline</th>
+                                <th>Responses</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- show price requests data -->
+                            <tr th:each="pr : ${priceRequests}">
+                                <td th:text="${'PR-' + pr.id}"></td>
+                                <td th:text="${pr.materialcategory}"></td>
+                                <td th:text="${pr.itemSpecification}"></td>
+                                <td th:text="${pr.quantity}"></td>
+                                <td th:text="${pr.deadline}"></td>
+                                <td>
+                                    <span class="badge bg-info text-dark" th:text="${pr.replies != null ? pr.replies.size() : 0} + ' Replies'"></span>
+                                </td>
+                                <td>
+                                    <span class="badge" th:text="${pr.requeststatus}"
+                                        th:classappend="${pr.requeststatus == 'Pending' ? 'bg-warning text-dark' : (pr.requeststatus == 'Completed' ? 'bg-success' : 'bg-secondary')}"></span>
+                                </td>
+                                <td class="d-flex flex-row justify-content-center">
+                                    <button class="btn btn-teal px-3 py-2 ms-2" th:onclick="|viewPriceRequestReplies(${pr.id})|">View Replies</button>
+                               
+                                    <button class="btn btn-danger px-3 py-2 ms-2" th:onclick="|openSendQuotationModal(${pr.id})|">Send Quotation</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- supplier payment tab -->
+
+            <div id="supplierPayments" class="tab-content">
+                <!-- Info banner linking to the Payment Module -->
+                <div class="alert d-flex align-items-center gap-3 mb-4"
+                     style="background: linear-gradient(135deg,#1B263B,#2d3f5f); color:#fff; border:none; border-radius:10px; padding:16px 20px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#FFC107">
+                        <path d="M560-440q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35ZM280-320q-33 0-56.5-23.5T200-400v-320q0-33 23.5-56.5T280-800h560q33 0 56.5 23.5T920-720v320q0 33-23.5 56.5T840-320H280Zm80-80h400q0-33 23.5-56.5T840-480v-160q-33 0-56.5-23.5T760-720H360q0 33-23.5 56.5T280-640v160q33 0 56.5 23.5T360-400Zm-240 240q-33 0-56.5-23.5T40-240v-440h80v440h680v80H120Zm160-240v-320 320Z"/>
+                    </svg>
+                    <div class="flex-grow-1">
+                        <strong style="font-size:1rem;">Supplier Payments have moved!</strong>
+                        <div style="font-size:0.85rem; opacity:0.85; margin-top:2px;">
+                            All supplier payment tracking and customer invoicing is now managed in the dedicated <strong>Payment Module</strong>.
+                        </div>
+                    </div>
+                    <a th:href="@{/payment/management}" class="btn btn-sm"
+                       style="background:#FFC107; color:#1A1A1A; font-weight:700; white-space:nowrap; border-radius:6px; padding:8px 18px;">
+                        Go to Payments →
+                    </a>
+                </div>
+
+                <!--  add button area -->
+                <div class="d-flex flex-row align-items-center justify-content-between mb-4">
+                    <div class="searchBar w-100 m-3">
+                        <span class="px-2"><svg xmlns="http://www.w3.org/2000/svg" height="24px"
+                                viewBox="0 -960 960 960" width="24px" fill="#7d7c7c">
+                                <path
+                                    d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+                            </svg></span>
+                        <input type="text" class="searchInput" id="searchPayment" placeholder="Search Payments">
+                    </div>
+                    <button class="btn btn-gold" style="width: 200px;" data-bs-toggle="modal"
+                        data-bs-target="#addPurchaseOrderModal" onclick="openAddPurchaseOrderModal()">Place Order</button>
+                </div>
+
+                <!-- purchase order table -->
+                <div class="container-fluid p-0">
+                    <table class="supplierTable">
+                        <thead>
+                            <tr>
+                                <th>PO Number</th>
+                                <th>Supplier Name</th>
+                                <th>Order Date</th>
+                                <th>Items</th>
+                                <th>Payment Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="purchaseOrderTableBody">
+                            <!-- show order data -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supplier Modal -->
+    <div class="modal fade" id="addSupplierModal" tabindex="-1" aria-labelledby="addSupplierModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl supModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+                <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-white">Add New Supplier</h4>
+                    <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="d-flex flex-row flex-wrap" id="supplierForm" onsubmit="submitSupplier(event)">
+                        <div class="d-flex flex-row flex-wrap w-100">
+                            <div class="mb-3 w-50">
+                                <label for="companyname" class="form-label">Company Name: <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control w-75" id="companyname" name="companyname"
+                                    placeholder="Enter company name">
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="contactperson" class="form-label">Contact Person: <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control w-75" id="contactperson" name="contactperson"
+                                    placeholder="Enter contact person name">
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="email" class="form-label">Email: <span
+                                        class="text-danger">*</span></label>
+                                <input type="email" class="form-control w-75" id="email" name="email" placeholder="Enter email">
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="contact" class="form-label">Phone Number: <span
+                                        class="text-danger">*</span></label>
+                                <input type="tel" class="form-control w-75" id="contact" name="contact"
+                                    placeholder="Enter phone number">
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="address" class="form-label">Address: <span
+                                        class="text-danger">*</span></label>
+                                <textarea id="address" name="address" class="form-control w-75"
+                                    placeholder="Enter address"></textarea>
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="status" class="form-label">Status: <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select w-75" id="status" name="status">
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="materials" class="form-label">Material: <span
+                                        class="text-danger">*</span></label>
+                                <div id="materials" class="d-flex flex-wrap gap-3">
+                                    <div class="form-check" th:each="cat : ${categoryList}">
+                                        <input class="form-check-input" type="checkbox" name="category" th:value="${cat.id}" th:id="${'cat_' + cat.id}">
+                                        <label class="form-check-label" th:for="${'cat_' + cat.id}" th:text="${cat.name}"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="description" class="form-label">Description (Optional):</label>
+                                <textarea id="description" name="description" class="form-control w-75"
+                                    placeholder="Enter description"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 w-100 d-flex flex-row justify-content-end align-items-center gap-3">
+                            <button type="submit" class="btn btn-teal action-btn">Add Supplier</button>
+                            <button type="reset" class="btn btn-secondary action-btn">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Order Modal -->
+    <div class="modal fade" id="addPurchaseOrderModal" tabindex="-1" aria-labelledby="addPurchaseOrderModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl supModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+                <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-white">Place Purchase Order</h4>
+                    <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="d-flex flex-row flex-wrap" id="purchaseOrderForm" onsubmit="submitPurchaseOrder(event)">
+                        <div class="d-flex flex-row flex-wrap w-100">
+                            <div class="mb-3 w-50">
+                                <label for="poPriceRequest" class="form-label">Price Request: <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select w-75" id="poPriceRequest" name="priceRequestId" onchange="onPriceRequestSelected(this.value)" required>
+                                    <option value="" selected disabled>Select Price Request</option>
+                                </select>
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="poSupplier" class="form-label">Supplier: <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select w-75" id="poSupplier" name="supplierId" required>
+                                    <option value="" selected disabled>Select Supplier</option>
+                                </select>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="poDate" class="form-label">Order Date: <span
+                                        class="text-danger">*</span></label>
+                                <input type="date" class="form-control w-75" id="poDate" name="orderDate" required>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="poItem" class="form-label">Item / Material: <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select w-75" id="poItem" name="items" required>
+                                    <option value="" selected disabled>Select Item / Material</option>
+                                    <option th:each="mat : ${materialsList}" th:value="${mat.material}" th:text="${mat.material}"></option>
+                                </select>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="poQuantity" class="form-label">Quantity: <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control w-75" id="poQuantity" name="quantity"
+                                    placeholder="Enter quantity" required>
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="poStatus" class="form-label">Payment Status: <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select w-75" id="poStatus" name="paymentStatus" required>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Paid">Paid</option>
+                                </select>
+                            </div>
+                            <div class="mb-3 w-100">
+                                <label for="poNote" class="form-label">Notes (Optional):</label>
+                                <textarea id="poNote" name="notes" class="form-control" style="width: 87.5%;"
+                                    placeholder="Enter any notes"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 w-100 d-flex flex-row justify-content-end align-items-center gap-3">
+                            <button type="submit" class="btn btn-teal action-btn">Place Order</button>
+                            <button type="reset" class="btn btn-secondary action-btn">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price Request Modal -->
+    <div class="modal fade" id="priceRequestModal" tabindex="-1" aria-labelledby="priceRequestModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl supModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+                <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-white">Send Price Request</h4>
+                    <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="d-flex flex-row flex-wrap" id="priceRequestForm" onsubmit="submitPriceRequest(event)">
+                        <div class="d-flex flex-row flex-wrap w-100">
+                            <div class="mb-3 w-50">
+                                <label for="prSupplierSelect" class="form-label">Select Supplier: <span class="text-danger">*</span></label>
+                                <select class="form-select w-75" id="prSupplierSelect" onchange="addSupplierFromDropdown(this)">
+                                    <option value="" selected disabled>Choose Supplier</option>
+                                    <option th:each="supplier : ${suppliers}" th:value="${supplier.id}" th:text="${supplier.companyname}"></option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3 w-100">
+                                <label class="form-label">Selected Suppliers:</label>
+                                <div id="prSelectedSuppliersContainer" class="d-flex flex-wrap gap-2 p-3 border rounded bg-light" style="min-height: 50px; width: 87.5%;">
+                                    <span class="text-muted" id="prNoSuppliersText">No suppliers selected yet.</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 w-50">
+                                <label for="category" class="form-label">Material Category: <span class="text-danger">*</span></label>
+                                <select class="form-select w-75" id="category" required >
+                                    <option value="" selected disabled>Select Material</option>
+
+                                </select>
+                            </div>
+
+                            <div class="mb-3 w-50">
+                                <label for="material" class="form-label">Specific Item/Specification: <span class="text-danger">*</span></label>
+                                <select class="form-select w-75" id="material" required>
+                                    <option value="" selected disabled>Select Material</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3 w-50">
+                                <label for="prQuantity" class="form-label">Quantity Required: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control w-75" id="prQuantity" placeholder="e.g. 500 sheets, 10 L" required>
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+
+                            <div class="mb-3 w-50">
+                                <label for="prDeadline" class="form-label">Expected Quotation Deadline:</label>
+                                <input type="date" class="form-control w-75" id="prDeadline">
+                            </div>
+
+                            <div class="mb-3 w-100">
+                                <label for="prMessage" class="form-label">Message / Instructions (Optional):</label>
+                                <textarea id="prMessage" class="form-control" style="width: 87.5%;" rows="4" placeholder="Enter any additional instructions or specs for the suppliers..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 w-100 d-flex flex-row justify-content-end align-items-center gap-3">
+                            <button type="submit" class="btn btn-teal action-btn">Send Request</button>
+                            <button type="button" class="btn btn-secondary action-btn" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Replies Modal -->
+    <div class="modal fade" id="viewRepliesModal" tabindex="-1" aria-labelledby="viewRepliesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl supModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+                <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-white">Price Request Replies</h4>
+                    <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid p-0">
+                        <table class="supplierTable" id="repliesTable">
+                            <thead>
+                                <tr>
+                                    <th>Supplier Name</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price</th>
+                                    <th>Delivery Charge</th>
+                                    <th>Total Amount</th>
+                                    <th>Proposed Delivery Date</th>
+                                    <th>Reply Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="repliesTableBody">
+                                <!-- Replies will be dynamically populated here via JS -->
+                            </tbody>
+                        </table>
+                        <div id="noRepliesMessage" class="alert alert-info mt-3" style="display: none;">
+                            No suppliers have replied to this price request yet.
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary action-btn" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Payment Modal -->
+    <div class="modal fade" id="editPaymentModal" tabindex="-1" aria-labelledby="editPaymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg supModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+                <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-white">Edit Payment Status <span id="paidBadge" class="badge bg-success ms-3" style="display:none;">PAID</span></h4>
+                    <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editPaymentForm" onsubmit="submitPaymentUpdate(event)">
+                        <input type="hidden" id="editPOId" name="poId">
+                        
+                        <div class="mb-3">
+                            <label for="editPaymentStatus" class="form-label">Payment Status: <span class="text-danger">*</span></label>
+                            <select class="form-select" id="editPaymentStatus" name="paymentStatus" onchange="handlePaymentStatusChange(this.value)" required>
+                                <option value="Pending">Pending</option>
+                                <option value="Paid">Paid</option>
+                            </select>
+                        </div>
+
+                        <div id="paymentDetailsSection" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label">Amount To Pay:</label>
+                                <div id="amountDueDisplay" class="fw-bold">-</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="paymentMethod" class="form-label">Payment Method: <span class="text-danger">*</span></label>
+                                <select class="form-select" id="paymentMethod" name="paymentMethod">
+                                    <option value="" selected disabled>Select Method</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="Cheque">Cheque</option>
+                                    <option value="Card">Card</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="paidAmount" class="form-label">Paid Amount: <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" class="form-control" id="paidAmount" name="paidAmount" placeholder="Enter amount">
+                            </div>
+                        </div>
+
+                        <div id="paymentProofSection" class="mb-3" style="display: none;">
+                            <label for="paymentProofFile" class="form-label">Payment Proof: <span class="text-danger">*</span></label>
+                            <div class="form-text mb-2">Upload receipt, invoice, or payment confirmation (PDF, JPG, PNG)</div>
+                            <input type="file" class="form-control" id="paymentProofFile" name="paymentProof" accept=".pdf,.jpg,.jpeg,.png">
+                            <small class="form-text text-muted">Max file size: 5MB</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="paymentNotes" class="form-label">Payment Notes (Optional):</label>
+                            <textarea id="paymentNotes" name="paymentNotes" class="form-control" rows="3" placeholder="Add any notes about this payment..."></textarea>
+                        </div>
+
+                        <div class="d-flex flex-row justify-content-end align-items-center gap-3">
+                            <button type="submit" class="btn btn-teal action-btn">Update Payment</button>
+                            <button type="button" class="btn btn-secondary action-btn" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Quotation Modal -->
+    <div class="modal fade" id="sendQuotationModal" tabindex="-1" aria-labelledby="sendQuotationModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg supModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+                <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-white">Send Supplier Quotation</h4>
+                    <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="d-flex flex-row flex-wrap" id="sendQuotationForm" onsubmit="submitSupplierQuotation(event)">
+                        <div class="d-flex flex-row flex-wrap w-100">
+                            <!-- Hidden Price Request ID -->
+                            <input type="hidden" id="sqPriceRequestId" name="priceRequestId">
+                            
+                            <div class="mb-3 w-100">
+                                <label for="sqPriceRequestDisplay" class="form-label">Price Request:</label>
+                                <input type="text" class="form-control" id="sqPriceRequestDisplay" readonly>
+                            </div>
+
+                            <div class="mb-3 w-100">
+                                <label for="sqSupplierSelect" class="form-label">Select Supplier: <span class="text-danger">*</span></label>
+                                <select class="form-select" id="sqSupplierSelect" name="supplierId" required>
+                                    <option value="" selected disabled>Choose Supplier</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3 w-50">
+                                <label for="sqUnitPrice" class="form-label">Unit Price (Rs.): <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" class="form-control w-75" id="sqUnitPrice" name="unitPrice" placeholder="Enter unit price" required oninput="calculateSqTotal()">
+                            </div>
+
+                            <div class="mb-3 w-50">
+                                <label for="sqQuantity" class="form-label">Quantity: <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control w-75" id="sqQuantity" name="quantity" placeholder="Enter quantity" required oninput="calculateSqTotal()">
+                            </div>
+
+                            <div class="mb-3 w-50">
+                                <label for="sqDeliveryCharge" class="form-label">Delivery Charge (Rs.): <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" class="form-control w-75" id="sqDeliveryCharge" name="deliveryCharge" placeholder="Enter delivery charge" required oninput="calculateSqTotal()">
+                            </div>
+
+                            <div class="mb-3 w-50">
+                                <label for="sqDeliveryDate" class="form-label">Delivery Date: <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control w-75" id="sqDeliveryDate" name="deliveryDate" required>
+                            </div>
+
+                            <div class="mb-3 w-50">
+                                <label for="sqTotalAmount" class="form-label">Total Amount (Rs.):</label>
+                                <input type="number" step="0.01" class="form-control w-75" id="sqTotalAmount" name="totalAmount" readonly placeholder="Auto-calculated">
+                            </div>
+                        </div>
+
+                        <div class="mb-3 w-100 d-flex flex-row justify-content-end align-items-center gap-3">
+                            <button type="submit" class="btn btn-teal action-btn">Submit Quotation</button>
+                            <button type="button" class="btn btn-secondary action-btn" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </main>
+</div>
+
+    <!-- link jquery -->
+    <script th:src="@{/js/jquery-4.0.0.min.js}"></script>
+
+    <!-- link sweetalert css and js -->
+
+    <script th:src="@{/sweetalert2/sweetalert2.min.js}"></script>
+
+    <!-- link common js file -->
+    <script th:src="@{/js/common.js}"></script>
+<!-- get suppliers details into js file-->
+<!-- <script th:inline="javascript">
+    const globalSuppliers = [[${supplier}]];
+</script> -->
+
+    <!-- link user js file -->
+    <script th:src="@{/js/supplier.js}"></script>
+
+    <!-- link js bootstrap -->
+    <script th:src="@{/css/bootstrap-5.3.7-dist/js/bootstrap.bundle.min.js}"></script>
+
+
+</body>
+
+</html>

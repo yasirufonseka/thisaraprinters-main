@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Thisara Printers</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap-5.3.7-dist/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/layout :: sidebar('dashboard')}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <div th:replace="~{fragments/layout :: topbar}"></div>
+
+            <div class="dashboard-page animate-fade-in">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <p th:text="'Welcome back, ' + ${username} + '. Here is an overview of your printing operations.'">
+                        Welcome back, John. Here is an overview of your printing operations.</p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <!-- <div class="stat-trend trend-up">+12.5%</div> -->
+                        <div class="stat-icon" style="background-color: rgba(0, 210, 255, 0.1); color: var(--accent);">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                                fill="currentColor">
+                                <path
+                                    d="M280-80q-33 0-56.5-23.5T200-160q0-33 23.5-56.5T280-240q33 0 56.5 23.5T360-160q0 33-23.5 56.5T280-80Zm400 0q-33 0-56.5-23.5T600-160q0-33 23.5-56.5T680-240q33 0 56.5 23.5T760-160q0 33-23.5 56.5T680-80ZM160-760v-80h720v80H160Z" />
+
+                            </svg>
+                        </div>
+                        <div class="stat-value" th:text="${totalOrders}">0</div>
+                        <div class="stat-label">Total Orders</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">all quotations</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <!-- <div class="stat-trend trend-up">+8.2%</div> -->
+                        <div class="stat-icon" style="background-color: rgba(0, 230, 118, 0.1); color: #00e676;">
+                            <span class="">Rs.</span>
+                        </div>
+                        <div class="stat-value"
+                            th:text="'Rs. ' + ${#numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">Rs. 0.00
+                        </div>
+                        <div class="stat-label">Revenue</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">total quotation value
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-trend trend-down">-3</div>
+                        <div class="stat-icon" style="background-color: rgba(255, 82, 82, 0.1); color: #ff5252;">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                                fill="currentColor">
+                                <path
+                                    d="M640-640v-120H320v120h-80v-200h480v200h-80Zm-480 80h640-640Zm560 100q17 0 28.5-11.5T760-500q0-17-11.5-28.5T720-540q-17 0-28.5 11.5T680-500q0 17 11.5 28.5T720-460ZM640-200v-160H320v160h320Zm80 80H240v-160H80v-240q0-51 35-85.5t85-34.5h560q51 0 85.5 34.5T880-520v240H720v160Zm80-240v-160q0-17-11.5-28.5T760-560H200q-17 0-28.5 11.5T160-520v160h80v-80h480v80h80Z" />
+                            </svg>
+                        </div>
+                        <div class="stat-value" th:text="${activeJobs}">0</div>
+                        <div class="stat-label">Active Jobs</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">in production</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-trend trend-up">+24</div>
+                        <div class="stat-icon" style="background-color: rgba(0, 210, 255, 0.1); color: var(--accent);">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                                fill="currentColor">
+                                <path
+                                    d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z" />
+                            </svg>
+                        </div>
+                        <div class="stat-value" th:text="${totalCustomers}">0</div>
+                        <div class="stat-label">Customers</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">registered customers
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Revenue Overview</div>
+                            <div class="d-flex align-items-center gap-2">
+                                <div
+                                    style="width: 10px; height: 10px; background-color: var(--accent); border-radius: 50%;">
+                                </div>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Revenue</span>
+                            </div>
+                        </div>
+                        <div style="height: 300px; padding: 20px 0;">
+                            <canvas id="revenueChart" width="800" height="300" style="width:100%; height:100%;"></canvas>
+                        </div>
+                        <script th:inline="javascript">
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const labels = /*[[${revenueChartLabels}]]*/ [];
+                                const data = /*[[${revenueChartData}]]*/ [];
+                                const canvas = document.getElementById('revenueChart');
+                                if (!canvas || !labels || !data) return;
+
+                                const ctx = canvas.getContext('2d');
+                                const chartWidth = canvas.width;
+                                const chartHeight = canvas.height;
+                                const padding = 40;
+                                const maxValue = Math.max(...data, 10);
+                                const barWidth = (chartWidth - padding * 2) / Math.max(data.length, 1) * 0.6;
+                                const gap = (chartWidth - padding * 2 - barWidth * data.length) / Math.max(data.length - 1, 1);
+
+                                ctx.clearRect(0, 0, chartWidth, chartHeight);
+                                ctx.fillStyle = '#f8fafc';
+                                ctx.fillRect(0, 0, chartWidth, chartHeight);
+
+                                // draw grid lines
+                                ctx.strokeStyle = '#e5e7eb';
+                                ctx.lineWidth = 1;
+                                for (let i = 0; i <= 5; i++) {
+                                    const y = padding + ((chartHeight - padding * 2) / 5) * i;
+                                    ctx.beginPath();
+                                    ctx.moveTo(padding, y);
+                                    ctx.lineTo(chartWidth - padding, y);
+                                    ctx.stroke();
+                                }
+
+                                // draw bars
+                                data.forEach((value, index) => {
+                                    const x = padding + index * (barWidth + gap);
+                                    const barHeight = (value / maxValue) * (chartHeight - padding * 2);
+                                    const y = chartHeight - padding - barHeight;
+                                    ctx.fillStyle = 'rgba(0, 210, 255, 0.8)';
+                                    ctx.fillRect(x, y, barWidth, barHeight);
+                                    ctx.fillStyle = '#0f172a';
+                                    ctx.font = '12px Inter, sans-serif';
+                                    ctx.fillText(labels[index], x, chartHeight - padding + 18);
+                                });
+
+                                // draw Y axis labels
+                                ctx.fillStyle = '#64748b';
+                                ctx.font = '12px Inter, sans-serif';
+                                for (let i = 0; i <= 5; i++) {
+                                    const value = Math.round(maxValue * (5 - i) / 5);
+                                    const y = padding + ((chartHeight - padding * 2) / 5) * i + 4;
+                                    ctx.fillText(value.toLocaleString(), 10, y);
+                                }
+                            });
+                        </script>
+                    </div>
+
+                    <div class="card-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Quick Actions</div>
+                        </div>
+                        <div class="d-grid gap-3">
+                            <a th:href="@{/order/management}"
+                                class="btn d-flex align-items-center justify-content-center gap-2 py-3"
+                                style="background: var(--accent-gradient); color: white; border: none; border-radius: 12px; font-weight: 600;">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960"
+                                    width="20px" fill="currentColor">
+                                    <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+                                </svg>
+                                New Order
+                            </a>
+                            <div class="d-grid grid-template-columns-2 gap-3"
+                                style="display: grid; grid-template-columns: 1fr 1fr;">
+                                <button class="btn py-3"
+                                    style="background: var(--bg-hover); color: white; border: 1px solid var(--border-color); border-radius: 12px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960"
+                                        width="20px" fill="var(--text-muted)" class="mb-1 d-block mx-auto">
+                                        <path
+                                            d="M440-200h80v-167l64 64 56-56-160-160-160 160 56 56 64-64v167ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520Z" />
+                                    </svg>
+                                    <span style="font-size: 0.8rem;">Upload Files</span>
+                                </button>
+                                <button class="btn py-3"
+                                    style="background: var(--bg-hover); color: white; border: 1px solid var(--border-color); border-radius: 12px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960"
+                                        width="20px" fill="var(--text-muted)" class="mb-1 d-block mx-auto">
+                                        <path
+                                            d="M280-280h280v-80H280v80Zm0-160h400v-80H280v80Zm0-160h400v-80H280v80ZM160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm0 0v-560 560Z" />
+                                    </svg>
+                                    <span style="font-size: 0.8rem;">Get Quote</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/css/bootstrap-5.3.7-dist/js/bootstrap.bundle.min.js}"></script>
+</body>
+
+</html>

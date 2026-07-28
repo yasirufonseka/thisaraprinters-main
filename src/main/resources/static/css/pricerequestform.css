@@ -1,0 +1,236 @@
+/* Global Resets and Font */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(180deg, #ECE9E6 0%, #FFFFFF 100%);
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+}
+
+/* Navbar */
+.top-navbar {
+    background-color: #1A1A1A !important;
+}
+
+h2 {
+    font-weight: 700;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Main Content Area */
+.main-content {
+    margin-left: var(--sidebar-width, 260px);
+    transition: all 0.3s ease;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Form Container Styling */
+.container-fluid {
+    padding: 0 20px;
+}
+
+.form-card {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    max-width: 800px;
+    width: 100%;
+    margin: 40px auto;
+    animation: slideUpFadeIn 0.6s ease-out;
+}
+
+.form-header {
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+.form-header h3 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1A1A1A;
+    margin-bottom: 8px;
+}
+
+.form-subtitle {
+    font-size: 14px;
+    color: #666666;
+    font-weight: 500;
+}
+
+/* Form Grid Layout */
+.price-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1A1A1A;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Input Styling */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.currency-symbol {
+    position: absolute;
+    left: 12px;
+    font-weight: 600;
+    color: #00AEEF;
+    font-size: 14px;
+}
+
+.input-wrapper .form-control {
+    padding-left: 40px;
+}
+
+.form-control {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+    background-color: #FFFFFF;
+    color: #1A1A1A;
+}
+
+.form-control:focus {
+    border-color: #00AEEF;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 174, 239, 0.1);
+}
+
+.form-control::placeholder {
+    color: #999999;
+}
+
+.form-control:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #1A1A1A !important;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    justify-content: center;
+}
+
+.btn-primary-custom {
+    background: linear-gradient(135deg, #00AEEF 0%, #0088cc 100%);
+    color: #FFFFFF;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.3);
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 174, 239, 0.4);
+    background: linear-gradient(135deg, #0088cc 0%, #006fa3 100%);
+    color: #FFFFFF;
+}
+
+.btn-primary-custom:active {
+    transform: translateY(0);
+}
+
+/* Animations */
+@keyframes slideUpFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-card {
+        padding: 24px;
+        margin: 20px auto;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .form-header h3 {
+        font-size: 24px;
+    }
+
+    .d-flex.flex-row {
+        flex-direction: column;
+    }
+
+    .top-navbar h2 {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-card {
+        padding: 16px;
+    }
+
+    .form-header h3 {
+        font-size: 20px;
+    }
+
+    .form-label {
+        font-size: 12px;
+    }
+
+    .btn-primary-custom {
+        width: 100%;
+        justify-content: center;
+    }
+}

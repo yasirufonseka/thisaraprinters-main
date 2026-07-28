@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Thisara Printers</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap-5.3.7-dist/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/reports.css}">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/layout :: sidebar('reports')}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <div th:replace="~{fragments/layout :: topbar}"></div>
+
+        <!-- reports header -->
+        <div class="top-navbar w-100 d-flex justify-content-center py-3 mb-4 shadow-sm">
+            <div class="d-flex flex-row align-items-center justify-content-between w-75">
+                <h2 class="mb-0 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="35px" viewBox="0 -960 960 960" width="35px" fill="#FFFFFF">
+                        <path d="M320-240h60v-200h-60v200Zm100 0h60v-320h-60v320Zm100 0h60v-120h-60v120Zm-260 80q-33 0-56.5-23.5T180-240v-480q0-33 23.5-56.5T260-800h440q33 0 56.5 23.5T780-720v480q0 33-23.5 56.5T700-160H260Zm0-80h440v-480H260v480Zm0 0v-480 480Z"/>
+                    </svg>
+                    <span class="ms-2">Reports</span>
+                </h2>
+                <button class="btn btn-teal text-white fw-bold d-flex align-items-center" onclick="window.print()">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 -960 960 960" width="16" fill="currentColor" style="margin-right:6px">
+                        <path d="M640-640v-120H320v120h-80v-200h480v200h-80Zm-480 80h640-640Zm560 100q17 0 28.5-11.5T760-500q0-17-11.5-28.5T720-540q-17 0-28.5 11.5T680-500q0 17 11.5 28.5T720-460ZM640-200v-160H320v160h320Zm80 80H240v-160H80v-240q0-51 35-85.5t85-34.5h560q51 0 85.5 34.5T880-520v240H720v160Zm80-240v-160q0-17-11.5-28.5T760-560H200q-17 0-28.5 11.5T160-520v160h80v-80h480v80h80Z" />
+                    </svg>
+                    Print Report
+                </button>
+            </div>
+        </div>
+
+        <div class="container-fluid">
+
+                <!-- Report Type Selector -->
+                <div class="row g-3 mb-4 report-selector">
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="report-card active-card" onclick="selectReport('sales', this)" id="card-sales">
+                            <div class="icon" style="background:#ede9fe;"><svg xmlns="http://www.w3.org/2000/svg"
+                                    height="24" viewBox="0 -960 960 960" width="24" fill="#7c3aed">
+                                    <path d="M440-160v-487L216-423l-56-57 320-320 320 320-56 57-224-224v487h-80Z" />
+                                </svg></div>
+                            <h6>Sales</h6>
+                            <p>Quotations & revenue</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="report-card" onclick="selectReport('inventory', this)" id="card-inventory">
+                            <div class="icon" style="background:#d1fae5;"><svg xmlns="http://www.w3.org/2000/svg"
+                                    height="24" viewBox="0 -960 960 960" width="24" fill="#059669">
+                                    <path
+                                        d="M440-183v-274L200-596v274l240 139Zm80 0 240-139v-274L520-457v274Zm-40-343 237-137-237-137-237 137 237 137Z" />
+                                </svg></div>
+                            <h6>Inventory</h6>
+                            <p>Stock received</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="report-card" onclick="selectReport('grn', this)" id="card-grn">
+                            <div class="icon" style="background:#fef3c7;"><svg xmlns="http://www.w3.org/2000/svg"
+                                    height="24" viewBox="0 -960 960 960" width="24" fill="#d97706">
+                                    <path
+                                        d="M280-400h400v-80H280v80Zm0-120h400v-80H280v80Zm0-120h400v-80H280v80ZM160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Z" />
+                                </svg></div>
+                            <h6>GRN</h6>
+                            <p>Goods received notes</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="report-card" onclick="selectReport('purchase-orders', this)"
+                            id="card-purchase-orders">
+                            <div class="icon" style="background:#fee2e2;"><svg xmlns="http://www.w3.org/2000/svg"
+                                    height="24" viewBox="0 -960 960 960" width="24" fill="#dc2626">
+                                    <path
+                                        d="M280-80q-33 0-56.5-23.5T200-160q0-33 23.5-56.5T280-240q33 0 56.5 23.5T360-160q0 33-23.5 56.5T280-80Zm400 0q-33 0-56.5-23.5T600-160q0-33 23.5-56.5T680-240q33 0 56.5 23.5T760-160q0 33-23.5 56.5T680-80ZM160-760v-80h720v80H160Z" />
+                                </svg></div>
+                            <h6>Purchase Orders</h6>
+                            <p>Supplier purchases</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="report-card" onclick="selectReport('production', this)" id="card-production">
+                            <div class="icon" style="background:#e0f2fe;"><svg xmlns="http://www.w3.org/2000/svg"
+                                    height="24" viewBox="0 -960 960 960" width="24" fill="#0284c7">
+                                    <path d="M160-240v-80h640v80H160Zm0-160v-80h640v80H160Zm0-160v-80h640v80H160Z" />
+                                </svg></div>
+                            <h6>Production</h6>
+                            <p>Job status tracking</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="report-card" onclick="selectReport('supplier-price', this)"
+                            id="card-supplier-price">
+                            <div class="icon" style="background:#fce7f3;"><svg xmlns="http://www.w3.org/2000/svg"
+                                    height="24" viewBox="0 -960 960 960" width="24" fill="#db2777">
+                                    <path
+                                        d="M441-120 120-441l321-321 321 321-321 321Zm0-114 207-207-207-207-207 207 207 207Z" />
+                                </svg></div>
+                            <h6>Supplier Prices</h6>
+                            <p>Price comparison</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Bar -->
+                <div class="filter-bar mb-4">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-12 col-md-auto">
+                            <label>Report Type</label>
+                            <div style="font-weight:600; font-size:1rem;" id="reportTypeLabel">Sales Report</div>
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <label for="startDate">From Date</label>
+                            <input type="date" class="form-control" id="startDate">
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <label for="endDate">To Date</label>
+                            <input type="date" class="form-control" id="endDate">
+                        </div>
+                        <div class="col-12 col-md-auto">
+                            <button class="btn-generate" onclick="generateReport()">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 -960 960 960" width="16"
+                                    fill="currentColor" style="margin-right:6px">
+                                    <path
+                                        d="M320-240h60v-200h-60v200Zm100 0h60v-320h-60v320Zm100 0h60v-120h-60v120Zm60 80H160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h440q33 0 56.5 23.5T780-720v480q0 33-23.5 56.5T700-160Z" />
+                                </svg>
+                                Generate Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Output Area -->
+                <div class="report-content-area" id="reportContent">
+                    <!-- Loading -->
+                    <div class="loading-overlay" id="loadingOverlay">
+                        <div class="spinner-border text-primary" role="status"><span
+                                class="visually-hidden">Loading...</span></div>
+                    </div>
+
+                    <!-- Default / Empty state -->
+                    <div class="report-table-wrapper" id="emptyState">
+                        <div class="empty-state">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="64" viewBox="0 -960 960 960" width="64"
+                                fill="currentColor">
+                                <path
+                                    d="M320-240h60v-200h-60v200Zm100 0h60v-320h-60v320Zm100 0h60v-120h-60v120Zm-260 80q-33 0-56.5-23.5T180-240v-480q0-33 23.5-56.5T260-800h440q33 0 56.5 23.5T780-720v480q0 33-23.5 56.5T700-160H260Z" />
+                            </svg>
+                            <h5 class="mt-2">Select a report type and date range</h5>
+                            <p style="font-size:0.87rem;">Choose dates above and click <strong>Generate Report</strong>
+                                to view data</p>
+                        </div>
+                    </div>
+
+                    <!-- Stats Row -->
+                    <div class="row g-3 mb-4" id="statsRow" style="display:none!important;"></div>
+
+                    <!-- Data Table -->
+                    <div class="report-table-wrapper" id="tableWrapper" style="display:none;"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/jquery-4.0.0.min.js}"></script>
+    <script th:src="@{/css/bootstrap-5.3.7-dist/js/bootstrap.bundle.min.js}"></script>
+    <script>
+        // ── State ────────────────────────────────────────────
+        let currentReport = 'sales';
+        const reportLabels = {
+            'sales': 'Sales / Quotation Summary Report',
+            'inventory': 'Inventory & Stock-Lot Report',
+            'grn': 'GRN Report',
+            'purchase-orders': 'Purchase Orders Report',
+            'production': 'Production Status Report',
+            'supplier-price': 'Supplier Price Comparison Report'
+        };
+
+        // ── Init: set default dates (last 30 days) ───────────
+        window.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            const prior = new Date(); prior.setDate(prior.getDate() - 30);
+            document.getElementById('endDate').value = today.toISOString().slice(0, 10);
+            document.getElementById('startDate').value = prior.toISOString().slice(0, 10);
+        });
+
+        // ── Select report type ────────────────────────────────
+        function selectReport(type, el) {
+            currentReport = type;
+            document.getElementById('reportTypeLabel').textContent = reportLabels[type];
+            document.querySelectorAll('.report-card').forEach(c => c.classList.remove('active-card'));
+            el.classList.add('active-card');
+        }
+
+        // ── Generate Report ───────────────────────────────────
+        function generateReport() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            if (!start || !end) { alert('Please select both start and end dates.'); return; }
+            if (start > end) { alert('Start date must be before end date.'); return; }
+
+            showLoading(true);
+            hideResults();
+
+            fetch(`/reports/${currentReport}?start=${start}&end=${end}`)
+                .then(r => {
+                    if (!r.ok && r.status !== 200) {
+                        return r.text().then(text => { throw new Error('Server error ' + r.status + ': ' + text.substring(0, 200)); });
+                    }
+                    return r.json();
+                })
+                .then(data => {
+                    showLoading(false);
+                    if (data && data.error) {
+                        alert('Report error: ' + data.error);
+                        return;
+                    }
+                    renderReport(currentReport, data, start, end);
+                })
+                .catch(err => {
+                    showLoading(false);
+                    alert('Error generating report: ' + err.message);
+                });
+        }
+
+        function showLoading(on) {
+            document.getElementById('loadingOverlay').style.display = on ? 'flex' : 'none';
+        }
+        function hideResults() {
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('statsRow').style.display = 'none';
+            document.getElementById('tableWrapper').style.display = 'none';
+        }
+
+        // ── Render ────────────────────────────────────────────
+        function renderReport(type, data, start, end) {
+            const statsRow = document.getElementById('statsRow');
+            const tableWrapper = document.getElementById('tableWrapper');
+
+            let statsHtml = '';
+            let tableHtml = '';
+
+            switch (type) {
+                // ── 1. Sales / Quotation Summary ─────────────────────────────
+                case 'sales':
+                    statsHtml = `
+                    ${statCard('Total Quoted Value', 'Rs. ' + fmt(data.totalRevenue), '#ede9fe', '#7c3aed')}
+                    ${statCard('Total Advance', 'Rs. ' + fmt(data.totalAdvance), '#d1fae5', '#059669')}
+                    ${statCard('Total Quotations', data.totalOrders, '#e0f2fe', '#0284c7')}
+                    ${statCard('Pending', data.pendingCount, '#fef3c7', '#d97706')}
+                    ${statusBadgeStats(data.byStatus)}`;
+                    tableHtml = buildTable(
+                        ['Quote ID', 'Date', 'Customer', 'Product / Size', 'Qty', 'Quote Amt (Rs.)', 'Advance (Rs.)', 'Status', 'Expiry Date'],
+                        data.rows,
+                        ['id', 'date', 'customer', 'productSize', 'quantity', 'amount', 'advanceAmount', 'status', 'expiryDate'],
+                        { status: statusBadge, amount: v => fmt(v), advanceAmount: v => fmt(v) }
+                    );
+                    break;
+
+                // ── 2. Inventory / Stock-Lot ──────────────────────────────────
+                case 'inventory':
+                    statsHtml = `
+                    ${statCard('Total Lots', data.totalLots, '#d1fae5', '#059669')}
+                    ${statCard('Total Qty On-Hand', data.totalQty, '#e0f2fe', '#0284c7')}
+                    ${statCard('Below Reorder Level', data.belowReorderCount, '#fee2e2', '#dc2626')}`;
+                    tableHtml = buildTableInventory(data.rows);
+                    break;
+
+                // ── 3a. GRN ──────────────────────────────────────────────────
+                case 'grn':
+                    statsHtml = `
+                    ${statCard('Total GRNs', data.totalGRNs, '#fef3c7', '#d97706')}
+                    ${statCard('Total Qty Received', data.totalQtyReceived, '#d1fae5', '#059669')}`;
+                    tableHtml = buildTable(
+                        ['GRN Number', 'Received Date', 'Supplier', 'Supplier Invoice', 'Batch No', 'Material', 'Qty', 'Units', 'Notes'],
+                        data.rows,
+                        ['grnNumber', 'receivedDate', 'supplier', 'supplierInvoice', 'batchNo', 'material', 'receivedQty', 'units', 'notes']
+                    );
+                    break;
+
+                // ── 3b. Purchase Orders ───────────────────────────────────────
+                case 'purchase-orders':
+                    statsHtml = `
+                    ${statCard('Total Orders', data.totalOrders, '#fee2e2', '#dc2626')}
+                    ${statCard('Total Paid (Rs.)', 'Rs. ' + fmt(data.totalPaid), '#fef3c7', '#d97706')}
+                    ${statCard('Unpaid Orders', data.unpaidCount, '#ede9fe', '#7c3aed')}
+                    ${statusBadgeStats(data.byPaymentStatus)}`;
+                    tableHtml = buildTable(
+                        ['PO ID', 'Supplier', 'Order Date', 'Items', 'Qty', 'Payment Status', 'Method', 'Paid (Rs.)', 'Notes'],
+                        data.rows,
+                        ['id', 'supplier', 'orderDate', 'items', 'quantity', 'paymentStatus', 'paymentMethod', 'paidAmount', 'notes'],
+                        { paymentStatus: statusBadge, paidAmount: v => v != null ? fmt(v) : '-' }
+                    );
+                    break;
+
+                // ── 4. Production Status ──────────────────────────────────────
+                case 'production':
+                    statsHtml = `
+                    ${statCard('Total Jobs', data.totalJobs, '#e0f2fe', '#0284c7')}
+                    ${statCard('Overdue Jobs', data.overdueCount, '#fee2e2', '#dc2626')}
+                    ${statusBadgeStats(data.byStatus)}
+                    ${statusBadgeStats(data.byPriority, 'Priority')}`;
+                    tableHtml = buildTableProduction(data.rows);
+                    break;
+
+                case 'supplier-price':
+                    statsHtml = `
+                    ${statCard('Total Replies', data.totalReplies, '#fce7f3', '#db2777')}`;
+                    tableHtml = buildTable(
+                        ['Request ID', 'Material', 'Specification', 'Supplier', 'Unit Price (Rs.)', 'Qty', 'Total (Rs.)', 'Delivery Charge', 'Delivery Date', 'Reply Date'],
+                        data.rows,
+                        ['requestId', 'material', 'specification', 'supplier', 'unitPrice', 'quantity', 'totalAmount', 'deliveryCharge', 'deliveryDate', 'replyDate'],
+                        { unitPrice: v => v != null ? fmt(v) : '-', totalAmount: v => v != null ? fmt(v) : '-', deliveryCharge: v => v != null ? fmt(v) : '-' }
+                    );
+                    break;
+            }
+
+            statsRow.innerHTML = statsHtml;
+            statsRow.style.display = 'flex';
+            tableWrapper.innerHTML = `
+            <div style="padding:16px 20px; border-bottom:1px solid var(--border-color,#e2e8f0); display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <strong>${reportLabels[type]}</strong>
+                    <span style="font-size:0.8rem; color:var(--text-muted,#64748b); margin-left:10px;">${start} to ${end}</span>
+                </div>
+                <span style="font-size:0.8rem; color:var(--text-muted,#64748b);">${data.rows ? data.rows.length : 0} records</span>
+            </div>
+            <div style="overflow-x:auto;">${tableHtml}</div>`;
+            tableWrapper.style.display = 'block';
+        }
+
+        // ── Inventory table (custom: highlight below-reorder rows) ────────
+        function buildTableInventory(rows) {
+            if (!rows || rows.length === 0) return emptyTableMsg();
+            const headers = ['Lot ID', 'Variant (Material / GSM / Size)', 'Qty', 'Unit', 'Lot Type', 'Status', 'Source GRN', 'Received Date', 'Reorder Lvl'];
+            const head = headers.map(h => `<th>${h}</th>`).join('');
+            const body = rows.map(row => {
+                const below = row.belowReorder === true;
+                const rowStyle = below ? 'background:#fff5f5;' : '';
+                const qtyStyle = below ? 'color:#dc2626;font-weight:700;' : '';
+                const reorderCell = row.reorderLevel !== '-'
+                    ? `<td>${row.reorderLevel}${below ? ' <span class="badge-status" style="background:#fee2e2;color:#991b1b;margin-left:4px;">Low</span>' : ''}</td>`
+                    : `<td>-</td>`;
+                return `<tr style="${rowStyle}">
+                    <td>${row.lotId}</td>
+                    <td>${row.variant}</td>
+                    <td style="${qtyStyle}">${row.quantity}</td>
+                    <td>${row.unit}</td>
+                    <td>${row.lotType}</td>
+                    <td>${statusBadge(row.status)}</td>
+                    <td>${row.sourceGrn}</td>
+                    <td>${row.receivedDate}</td>
+                    ${reorderCell}
+                </tr>`;
+            }).join('');
+            return `<table class="tablestyle"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+        }
+
+        // ── Production table (custom: color-code daysRemaining) ────────────
+        function buildTableProduction(rows) {
+            if (!rows || rows.length === 0) return emptyTableMsg();
+            const headers = ['Order ID', 'Customer', 'Description', 'Deadline', 'Priority', 'Status', 'Days Remaining'];
+            const head = headers.map(h => `<th>${h}</th>`).join('');
+            const body = rows.map(row => {
+                let daysCell;
+                const d = row.daysRemaining;
+                if (d == null) {
+                    daysCell = `<td><span style="color:var(--text-muted,#64748b)">No deadline</span></td>`;
+                } else if (d < 0) {
+                    daysCell = `<td><span class="badge-status" style="background:#fee2e2;color:#991b1b;">${Math.abs(d)}d overdue</span></td>`;
+                } else if (d <= 3) {
+                    daysCell = `<td><span class="badge-status" style="background:#fef3c7;color:#92400e;">${d}d left</span></td>`;
+                } else {
+                    daysCell = `<td><span class="badge-status" style="background:#d1fae5;color:#065f46;">${d}d left</span></td>`;
+                }
+                return `<tr>
+                    <td>${row.orderId}</td>
+                    <td>${row.customer}</td>
+                    <td>${row.description}</td>
+                    <td>${row.deadline}</td>
+                    <td>${priorityBadge(row.priority)}</td>
+                    <td>${statusBadge(row.status)}</td>
+                    ${daysCell}
+                </tr>`;
+            }).join('');
+            return `<table class="tablestyle"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+        }
+
+        // ── Helpers ───────────────────────────────────────────
+        function emptyTableMsg() {
+            return `<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 -960 960 960" width="48" fill="currentColor"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Z"/></svg><h6 class="mt-2">No data found for selected date range</h6></div>`;
+        }
+
+        function statCard(label, value, bg, color) {
+            return `<div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:${color}">${value}</div><div class="stat-label">${label}</div></div></div>`;
+        }
+
+        function statusBadgeStats(obj, label) {
+            if (!obj || Object.keys(obj).length === 0) return '';
+            const items = Object.entries(obj).map(([k, v]) => `<span class="badge-status me-1" style="background:#f1f5f9;color:#334155">${k}: ${v}</span>`).join('');
+            return `<div class="col-12 col-md-6"><div class="stat-card"><div class="stat-label mb-2">${label || 'By Status'}</div><div>${items}</div></div></div>`;
+        }
+
+        function buildTable(headers, rows, fields, formatters) {
+            if (!rows || rows.length === 0) return emptyTableMsg();
+            const head = headers.map(h => `<th>${h}</th>`).join('');
+            const body = rows.map(row => {
+                const cells = fields.map(f => {
+                    let v = row[f];
+                    if (v == null) v = '-';
+                    if (formatters && formatters[f]) v = formatters[f](v);
+                    return `<td>${v}</td>`;
+                }).join('');
+                return `<tr>${cells}</tr>`;
+            }).join('');
+            return `<table class="tablestyle"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+        }
+
+        function statusBadge(v) {
+            if (!v || v === '-') return '-';
+            const colors = {
+                'Approved': '#d1fae5:#065f46', 'Approved / In Production': '#d1fae5:#065f46',
+                'Pending': '#fef3c7:#92400e', 'PENDING': '#fef3c7:#92400e',
+                'Rejected': '#fee2e2:#991b1b',
+                'Paid': '#d1fae5:#065f46', 'Unpaid': '#fee2e2:#991b1b', 'Partial': '#fef3c7:#92400e',
+                'Dispatched': '#ede9fe:#5b21b6', 'Ready to Deliver': '#d1fae5:#065f46',
+                'Printing': '#e0f2fe:#075985', 'Design Phase': '#fef3c7:#92400e',
+                'Finishing': '#e0f2fe:#075985', 'New Orders': '#f1f5f9:#334155',
+                'Available': '#d1fae5:#065f46', 'Used': '#fef3c7:#92400e', 'Damaged': '#fee2e2:#991b1b'
+            };
+            const pair = colors[v] ? colors[v].split(':') : ['#f1f5f9', '#334155'];
+            return `<span class="badge-status" style="background:${pair[0]};color:${pair[1]}">${v}</span>`;
+        }
+
+        function priorityBadge(v) {
+            if (!v || v === '-') return '-';
+            const colors = { 'Urgent': '#fee2e2:#991b1b', 'High': '#fef3c7:#92400e', 'Normal': '#d1fae5:#065f46' };
+            const pair = colors[v] ? colors[v].split(':') : ['#f1f5f9', '#334155'];
+            return `<span class="badge-status" style="background:${pair[0]};color:${pair[1]}">${v}</span>`;
+        }
+
+        function fmt(v) {
+            if (v == null) return '-';
+            return Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    </script>
+</body>
+
+</html>

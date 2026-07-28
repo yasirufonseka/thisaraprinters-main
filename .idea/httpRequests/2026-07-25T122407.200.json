@@ -1,0 +1,14 @@
+[
+  {
+    "designation": "Manager",
+    "id": 1
+  },
+  {
+    "designation": "Designer",
+    "id": 2
+  },
+  {
+    "designation": "Operator",
+    "id": 3
+  }
+]

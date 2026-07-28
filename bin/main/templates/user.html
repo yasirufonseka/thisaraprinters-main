@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <!-- link bootstrap -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap-5.3.7-dist/css/bootstrap.min.css}">
+    <!-- link css -->
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/sweetalert2/sweetalert2.min.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+<div class="app-container">
+    <!-- Sidebar -->
+<!--    uses for set active page in layout html-->
+    <div th:replace="~{fragments/layout :: sidebar('users')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Topbar -->
+        <div th:replace="~{fragments/layout :: topbar}"></div>
+    <!-- user management header -->
+
+
+    <div class="top-navbar w-100 d-flex justify-content-center py-3 mb-4 shadow-sm">
+        <div class="d-flex flex-row align-items-center justify-content-between w-75">
+            <h2 class="mb-0 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" height="35px" viewBox="0 -960 960 960" width="35px"
+                    fill="#FFFFFF">
+                    <path
+                        d="M560-440h200v-80H560v80Zm0-120h200v-80H560v80ZM200-320h320v-22q0-45-44-71.5T360-440q-72 0-116 26.5T200-342v22Zm160-160q33 0 56.5-23.5T440-560q0-33-23.5-56.5T360-640q-33 0-56.5 23.5T280-560q0 33 23.5 56.5T360-480ZM160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-480H160v480Zm0 0v-480 480Z" />
+                </svg>
+                <span class="ms-2">User Management</span>
+            </h2>
+        </div>
+    </div>
+
+    <!-- tab area for user and privilege -->
+    <div class="container-fluid">
+        <div class="tab-container">
+            <div class="tab-header">
+                <button class="tab-btn active" onclick="openTab(event, 'userView')">User</button>
+                <button class="tab-btn" onclick="openTab(event, 'privilegeView')">Privilege</button>
+            </div>
+
+            <div id="userView" class="tab-content" style="display: block;">
+                <!-- search bar and add button area -->
+                <div class="d-flex flex-row align-items-center justify-content-between mb-4">
+                    <div class="searchBar w-100 m-3">
+                        <span class="px-2"><svg xmlns="http://www.w3.org/2000/svg" height="24px"
+                                viewBox="0 -960 960 960" width="24px" fill="#7d7c7c">
+                                <path
+                                    d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+                            </svg></span>
+                        <input type="text" class="searchInput" id="searchUser" placeholder="Search User">
+                    </div>
+                    <button class="btn btn-gold text-dark" data-bs-toggle="modal" onclick="getEmployeeList()"
+                        data-bs-target="#addUserModal">Add
+                        User</button>
+                </div>
+
+                <!-- user table -->
+                <div class="container-fluid p-0 ">
+                    <table class="userTable ">
+                        <thead class="bg-body-secondary ">
+                            <tr>
+                                <th>Employee</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Designation</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- show user data -->
+                            <tr th:each="user : ${users}">
+                                <td th:text="${user.employeeid?.fullname ?: 'No Employee'}">John Doe (E001)</td>
+                                <td th:text="${user.username}"></td>
+                                <td th:text="${user.employeeid?.email ?: 'N/A'}"></td>
+                                <td th:text="${user.employeeid?.designationid?.designation ?: 'N/A'}">johndoe@example.com</td>
+                                <td><span class="badge" th:text="${user.status}"
+                                        th:class="${user.status == 'Active' ? 'badge bg-success' : 'badge bg-danger'}"></span>
+                                </td>
+                                <td class="d-flex flex-row justify-content-center gap-2">
+                                    <button class="btn btn-teal px-3 text-dark py-2"
+                                        th:onclick="|updateUser(${user.id})|">Edit</button>
+                                    <button class="btn btn-red px-3 text-dark py-2">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- privilege tab -->
+
+            <div id="privilegeView" class="tab-content">
+                <!--  search and button area -->
+                <div class="d-flex flex-row align-items-center justify-content-between mb-4">
+                    <div class="searchBar w-100 m-3">
+                        <span class="px-2"><svg xmlns="http://www.w3.org/2000/svg" height="24px"
+                                viewBox="0 -960 960 960" width="24px" fill="#7d7c7c">
+                                <path
+                                    d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+                            </svg></span>
+                        <input type="text" class="searchInput" id="searchPrivilege" placeholder="Search Privilege">
+                    </div>
+                    <button class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#addPrivilegeModal" onclick="resetPrivilegeForm()">Add
+                        Privilege</button>
+                </div>
+
+                <!-- privilege table -->
+                <div class="container-fluid p-0">
+                    <table class="privilegeTable">
+                        <thead class="bg-body-secondary text">
+                            <tr>
+                                <th>Role ID</th>
+                                <th>Role Name</th>
+                                <th>Permissions</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- show privilege data -->
+                            <tr>
+                                <td>R001</td>
+                                <td>Admin</td>
+                                <td>All Modules</td>
+                                <td class="d-flex flex-row justify-content-center gap-2">
+                                    <button class="btn btn-teal px-3 py-2 text-dark ms-2">Edit</button>
+                                    <button class="btn btn-red px-3 text-dark py-2 ms-2">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    </main>
+</div>
+
+    <!-- User Modal (placeholder similar to Supplier Modal) -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl supModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+                <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-dark" id="addUserModalHeader">Add New User</h4>
+                    <button type="reset" class="btn btn-close btn-red border-0" data-bs-dismiss="modal"
+                        aria-label="Close" onclick="resetForm()"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="d-flex flex-row flex-wrap" id="userFormData" onsubmit="submitUser(event)" autocomplete="off">
+                        <div class="d-flex flex-row flex-wrap w-100">
+                            <div class="mb-3 w-50">
+                                <label for="userEmployee" class="form-label">Employee: <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select w-75" id="userEmployee" name="employeeid">
+                                    <option value="" selected disabled>Select Employee</option>
+                                </select>
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="username" class="form-label">Username: <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control w-75" id="username" name="username"
+                                    placeholder="Enter username" autocomplete="username">
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="userPassword" class="form-label">Password: <span
+                                        class="text-danger">*</span></label>
+                                <input type="password" class="form-control w-75" id="userPassword" name="password"
+                                    placeholder="Enter password" autocomplete="new-password">
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="userNote" class="form-label">Note: </label>
+                                <input type="text" class="form-control w-75" id="userNote" name="note"
+                                    placeholder="Enter note Optional">
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="userRole" class="form-label">Role: <span class="text-danger">*</span></label>
+                                <select class="form-select w-75" id="userRole"  name="roleId" required >
+                                    <option value="" selected disabled>Select Role</option>
+
+                                </select>
+                                <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                            </div>
+                            <div class="mb-3 w-50">
+                                <label for="userStatus" class="form-label">Status: <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select w-75" id="userStatus" name="status">
+                                    <option value="Active" selected>Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 w-100 d-flex flex-row justify-content-end align-items-center gap-3">
+                            <button type="submit" class="btn submitButton btn-teal action-btn">Save</button>
+                            <button type="reset" class="btn btn-secondary action-btn">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privilege Modal -->
+    <div class="modal fade" id="addPrivilegeModal" tabindex="-1" aria-labelledby="addPrivilegeModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl supModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+                <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-white">Add New Privilege</h4>
+                    <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="d-flex flex-row flex-wrap" id="privilegeFormData" onsubmit="submitPrivilege(event)">
+                        <div class="d-flex flex-row flex-wrap w-100">
+                            <div class="mb-3 w-100">
+                                <label for="userRoles" class="form-label">Role: <span class="text-danger">*</span></label>
+                                <select class="form-select w-50" id="userRoles" name="roleId" required>
+                                    <option value="" selected disabled>Select Role</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3 w-100">
+                                <label class="form-label">Modules &amp; Permissions: <span class="text-danger">*</span></label>
+                                <div class="table-responsive w-100 border rounded-3 p-2 bg-light">
+                                    <table class="table table-hover table-striped mb-0">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th scope="col" style="width: 30%;">Module</th>
+                                                <th scope="col" style="width: 70%;">Permissions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="modulePrivilegeBody">
+                                            <!-- Dynamically generated rows -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 w-100 d-flex flex-row justify-content-end align-items-center gap-3">
+                            <button type="submit" class="btn btn-teal action-btn">Save</button>
+                            <button type="button" class="btn btn-secondary action-btn" onclick="resetPrivilegeForm()" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- link jquery -->
+    <script th:src="@{/js/jquery-4.0.0.min.js}"></script>
+
+    <!-- link sweetalert css and js -->
+
+    <script th:src="@{/sweetalert2/sweetalert2.min.js}"></script>
+
+    <!-- link common js file -->
+    <script th:src="@{/js/common.js}"></script>
+
+    <!-- link user js file -->
+    <script th:src="@{/js/user.js}"></script>
+
+    <!-- link js bootstrap -->
+    <script th:src="@{/css/bootstrap-5.3.7-dist/js/bootstrap.bundle.min.js}"></script>
+</body>
+
+</html>

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management</title>
+    <!-- link bootstrap -->
+    <link class="stylesheet" th:href="@{/css/bootstrap-5.3.7-dist/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/bootstrap-5.3.7-dist/css/bootstrap.min.css}">
+    <!-- link css -->
+    <link rel="stylesheet" th:href="@{/css/inventory.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/sweetalert2/sweetalert2.min.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+<div class="app-container">
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/layout :: sidebar('inventory')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Topbar -->
+        <div th:replace="~{fragments/layout :: topbar}"></div>
+
+        <!-- Inventory Management Header -->
+        <div class="top-navbar w-100 d-flex justify-content-center py-3 mb-4 shadow-sm">
+            <div class="d-flex flex-row align-items-center justify-content-between w-75">
+                <h2 class="mb-0 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="35px" viewBox="0 -960 960 960" width="35px"
+                        fill="#FFFFFF">
+                        <path
+                            d="M440-183v-274L200-596v274l240 139Zm80 0 240-139v-274L520-457v274ZM480-492l226-130-226-132-226 132 226 130Zm-40 376v-533L107-550q-19 11-33 30.5T60-475v315q0 30 15 54.5t50 25.5l315 180ZM480-80l315-180q35-1 50-25.5t15-54.5v-315q0-25-14-44.5T813-730L480-920 147-730q-19 11-33 30.5T100-655v315l340 196Z" />
+                    </svg>
+                    <span class="ms-2">Inventory Management</span>
+                </h2>
+            </div>
+        </div>
+        <!-- Main Content Area -->
+        <div class="container-fluid">
+            <div class="tab-container">
+                <div class="tab-header">
+                    <button class="tab-btn active" onclick="openTab(event, 'materials-content')">Material Inventory</button>
+                    <button class="tab-btn" onclick="openTab(event, 'grns-content')">Goods Received Notes (GRN)</button>
+                </div>
+
+                <!-- Materials Tab Pane -->
+                <div id="materials-content" class="tab-content" style="display: block;">
+                    <!-- Search & Buttons -->
+                    <div class="d-flex flex-row align-items-center justify-content-between mb-4">
+                        <div class="searchBar w-50 m-3">
+                            <span class="px-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                                    fill="#7d7c7c">
+                                    <path
+                                        d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+                                </svg>
+                            </span>
+                            <input type="text" class="searchInput" id="searchInventory" placeholder="Search Item Name or Unit">
+                        </div>
+                        <div class="d-flex gap-3">
+                            <button class="btn btn-warning text-dark" data-bs-toggle="modal" data-bs-target="#returnStockModal">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"
+                                     fill="currentColor" class="me-2">
+                                    <path d="M480-160 240-400l240-240 56 56-144 144h368v80H352l144 144-56 56Z"/>
+                                </svg>
+                                Return Stock
+                            </button>
+                            <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#usageModal">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"
+                                     fill="currentColor" class="me-2">
+                                    <path
+                                         d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z" />
+                                </svg>
+                                Record Usage
+                            </button>
+                            <button id="addMaterial" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMaterialModal">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"
+                                     fill="currentColor" class="me-2">
+                                    <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+                                </svg>
+                                Add Material
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Table -->
+                    <div class="table-responsive">
+                        <table class="inventoryTable" id="materialTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Material / Variant</th>
+                                    <th>Quantity</th>
+                                    <th>Width (mm)</th>
+                                    <th>Height (mm)</th>
+                                    <th>Weight (kg)</th>
+                                    <th>Source Ref</th>
+                                    <th>Lot Type</th>
+                                    <th>Created At</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loop through stocklots from backend -->
+                                <tr th:each="stocklot : ${stocklots}">
+                                    <td th:text="${stocklot.id}"></td>
+                                    <td th:text="${stocklot.variant != null ? stocklot.variant.material.material + ' (GSM: ' + stocklot.variant.gsm + ')' : '-'}"></td>
+                                    <td th:text="${stocklot.quantity}"></td>
+                                    <td th:text="${stocklot.width}"></td>
+                                    <td th:text="${stocklot.height}"></td>
+                                    <td th:text="${stocklot.weight}"></td>
+                                    <td th:text="${stocklot.sourceRef}"></td>
+                                    <td th:text="${stocklot.lotType}"></td>
+                                    <td th:text="${stocklot.createdAt}"></td>
+                                    <td>
+                                        <span th:if="${stocklot.status == 'Available'}" class="badge bg-success" th:text="${stocklot.status}"></span>
+                                        <span th:if="${stocklot.status == 'Used'}" class="badge bg-warning" th:text="${stocklot.status}"></span>
+                                        <span th:if="${stocklot.status == 'Expired'}" class="badge bg-danger" th:text="${stocklot.status}"></span>
+                                    </td>
+                                    <td class="d-flex flex-row justify-content-center gap-2">
+                                        <button class="btn btn-sm btn-teal px-3 py-2 text-dark" th:onclick="|updateStockLot(${stocklot.id})|">Edit</button>
+                                        <button class="btn btn-sm btn-red px-3 py-2 text-dark" th:onclick="|deleteStockLot(${stocklot.id})|">Delete</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- GRN Tab Pane -->
+                <div id="grns-content" class="tab-content" style="display: none;">
+                    <!-- Search & Buttons -->
+                    <div class="d-flex flex-row align-items-center justify-content-between mb-4">
+                        <div class="searchBar w-50 m-3">
+                            <span class="px-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                                    fill="#7d7c7c">
+                                    <path
+                                        d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+                                </svg>
+                            </span>
+                            <input type="text" class="searchInput" id="searchGRN" placeholder="Search GRN Number, Supplier, or Material">
+                        </div>
+                        <div class="d-flex gap-3">
+                            <button class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#grnModal">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"
+                                    fill="currentColor" class="me-2">
+                                    <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+                                </svg>
+                                Receive Goods (GRN)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- GRN Table -->
+                    <div class="table-responsive">
+                        <table class="inventoryTable" id="grnTable">
+                            <thead>
+                                <tr>
+                                    <th>GRN Number</th>
+                                    <th>Material / Item</th>
+                                    <th>Supplier</th>
+                                    <th>Received Qty</th>
+                                    <th>Unit</th>
+                                    <th>Invoice No</th>
+                                    <th>Batch No</th>
+                                    <th>Date Received</th>
+                                    <th>Expiry Date</th>
+                                    <th>Received By</th>
+                                    <th>Notes</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loop through GRNs from backend -->
+                                <tr th:each="grn : ${grns}">
+                                    <td class="fw-bold text-start ps-3" th:text="${grn.grnNumber}"></td>
+                                    <td th:text="${grn.variant != null ? grn.variant.material.material + ' (GSM: ' + grn.variant.gsm + ')' : '-'}"></td>
+                                    <td th:text="${grn.purchaseOrder != null ? grn.purchaseOrder.supplier.companyname : '-'}"></td>
+                                    <td th:text="${grn.receivedQuantity}"></td>
+                                    <td th:text="${grn.units}"></td>
+                                    <td th:text="${grn.supplierInvoiceNo}"></td>
+                                    <td th:text="${grn.batchNo}"></td>
+                                    <td th:text="${grn.receivedDate}"></td>
+                                    <td th:text="${grn.expiryDate != null ? grn.expiryDate : '-'}"></td>
+                                    <td th:text="${grn.receivedByUser != null ? grn.receivedByUser.username : '-'}"></td>
+                                    <td th:text="${grn.notes != null && !grn.notes.empty ? grn.notes : '-'}"></td>
+                                    <td class="d-flex flex-row justify-content-center gap-2">
+                                        <button class="btn btn-sm btn-teal px-3 py-2 text-dark" th:onclick="|editGRN(${grn.id})|">Edit</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+    <!-- GRN Modal -->
+    <div class="modal fade" id="grnModal" tabindex="-1" aria-labelledby="grnModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg invModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+                <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-white">Receive Goods (GRN)</h4>
+                    <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="row g-3" id="grnFormData" onsubmit="submitGRN(event)">
+                        <div class="col-md-6 d-none" >
+                            <label for="grnNumber" class="form-label">GRN Number</label>
+                            <input type="text" class="form-control" id="grnNumber" name="grnNumber" placeholder="Auto-generated when saved" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="grnSupplierInvoice" class="form-label">Supplier Invoice No</label>
+                            <input type="text" class="form-control" id="grnSupplierInvoice" name="supplierInvoiceNo" placeholder="Enter invoice number" required>
+                            <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="grnBatchNo" class="form-label">Batch Number</label>
+                            <input type="text" class="form-control" id="grnBatchNo" name="batchNo" placeholder="Enter batch number" required>
+                            <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="grnPlacedOrder" class="form-label">Placed Order <span class="text-danger">*</span></label>
+                            <select class="form-select" id="grnPlacedOrder" name="placedOrderId" required>
+                                <option value="">-- Select Placed Order --</option>
+                            </select>
+                            <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Supplier (auto-filled)</label>
+                            <input type="text" class="form-control" id="grnSupplierDisplay" placeholder="Select a Placed Order above" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="grnItem" class="form-label">Item / Material Variant</label>
+                            <select class="form-select" id="grnItem" name="materialId" required>
+                                <option selected disabled>Select Material Variant</option>
+                                <option th:each="variant : ${variants}" 
+                                        th:value="${variant.id}" 
+                                        th:data-unit="${variant.unit}" 
+                                        th:data-category="${variant.material.category != null ? variant.material.category.name : ''}"
+                                        th:data-sheets-per-ream="${variant.sheetsPerReam}"
+                                        th:text="${variant.material.material} + ' (GSM: ' + ${variant.gsm} + ', W: ' + ${variant.width} + 'mm, H: ' + ${variant.height} + 'mm)'"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="grnQty" class="form-label">Received Quantity</label>
+                            <input type="number" class="form-control" id="grnQty" name="recivedquantity" placeholder="Enter quantity" required>
+                            <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                        </div>
+                        <div class="col-md-6" id="grnSheetsPerReamContainer" style="display: none;">
+                            <label for="grnSheetsPerReam" class="form-label">Sheets per ream</label>
+                            <input type="number" class="form-control" id="grnSheetsPerReam" name="sheetsPerReam" placeholder="Enter sheets per ream" value="500">
+                            <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="grnUnits" class="form-label">Units</label>
+                            <select class="form-select" id="grnUnits" name="units" required>
+                                <option selected disabled>Select Unit</option>
+                                <option value="Sheets">Sheets</option>
+                                <option value="Liters">Liters</option>
+                                <option value="Kg">Kg</option>
+                                <option value="Pieces">Pieces</option>
+                                <option value="Boxes">Boxes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="grnDate" class="form-label">Date Received</label>
+                            <input type="date" class="form-control" id="grnDate" name="dateReceived" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="grnExpiryDate" class="form-label">Expiry Date</label>
+                            <input type="date" class="form-control" id="grnExpiryDate" name="expiryDate" placeholder="Enter expiry date">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="grnReceivedBy" class="form-label">Received By</label>
+                            <select class="form-select" id="grnReceivedBy" name="receivedByUserId" required>
+                                <option selected disabled>Select User</option>
+                                <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.username}"></option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="grnNotes" class="form-label">Notes / Remarks</label>
+                            <textarea class="form-control" id="grnNotes" name="notes" rows="3" placeholder="Enter any notes or remarks"></textarea>
+                        </div>
+                        <div class="col-12 text-end mt-4">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-teal">Save GRN</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usage Modal -->
+    <div class="modal fade" id="usageModal" tabindex="-1" aria-labelledby="usageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg invModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+                <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-white">Record Material Usage</h4>
+                    <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="row g-3" id="usageFormData" onsubmit="submitUsage(event)">
+                        <div class="col-md-6">
+                            <label for="usageItem" class="form-label">Item / Material Variant</label>
+                            <select class="form-select" id="usageItem" name="materialId" required>
+                                <option selected disabled>Select Material Variant</option>
+                                <option th:each="variant : ${variants}" th:value="${variant.id}" th:text="${variant.material.material} + ' (GSM: ' + ${variant.gsm} + ')'"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="usageQty" class="form-label">Quantity Used</label>
+                            <input type="number" class="form-control" id="usageQty" name="quantityUsed" placeholder="Enter amount used" required>
+                            <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="usageJob" class="form-label">Job ID / Purpose</label>
+                            <input type="text" class="form-control" id="usageJob" name="purpose" placeholder="e.g. Job #1234" required>
+                            <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="usageDate" class="form-label">Date Used</label>
+                            <input type="date" class="form-control" id="usageDate" name="dateUsed" required>
+                        </div>
+                        <div class="col-12 text-end mt-4">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-teal">Record Usage</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Stock Modal -->
+    <div class="modal fade" id="returnStockModal" tabindex="-1" aria-labelledby="returnStockModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg invModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+                <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-white">Return Material Stock</h4>
+                    <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="row g-3" id="returnStockFormData" onsubmit="submitReturnStock(event)">
+                        <div class="col-md-6">
+                            <label for="returnItem" class="form-label">Item / Material Variant</label>
+                            <select class="form-select" id="returnItem" name="variantId" required>
+                                <option selected disabled>Select Material Variant</option>
+                                <option th:each="variant : ${variants}" th:value="${variant.id}"
+                                        th:data-unit="${variant.unit}"
+                                        th:data-width="${variant.width}"
+                                        th:data-height="${variant.height}"
+                                        th:data-weight="${variant.weightPerUnit}"
+                                        th:text="${variant.material.material} + ' (GSM: ' + ${variant.gsm} + ', W: ' + ${variant.width} + 'mm, H: ' + ${variant.height} + 'mm)'"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="returnQty" class="form-label">Quantity Returned</label>
+                            <input type="number" class="form-control" id="returnQty" name="returnedQty" placeholder="Enter amount returned" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="returnJob" class="form-label">Job ID / Job No</label>
+                            <input type="text" class="form-control" id="returnJob" name="jobNo" placeholder="e.g. Job #1234" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="returnUnit" class="form-label">Units</label>
+                            <select class="form-select" id="returnUnit" name="unit" required>
+                                <option selected disabled>Select Unit</option>
+                                <option value="Sheets">Sheets</option>
+                                <option value="Liters">Liters</option>
+                                <option value="Kg">Kg</option>
+                                <option value="Pieces">Pieces</option>
+                                <option value="Boxes">Boxes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="returnHeight" class="form-label">Height (mm)</label>
+                            <input type="number" step="any" class="form-control" id="returnHeight" name="height" placeholder="Height" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="returnWidth" class="form-label">Width (mm)</label>
+                            <input type="number" step="any" class="form-control" id="returnWidth" name="width" placeholder="Width" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="returnWeight" class="form-label">Weight (kg)</label>
+                            <input type="number" step="any" class="form-control" id="returnWeight" name="weight" placeholder="Weight" required>
+                        </div>
+                        <div class="col-12 text-end mt-4">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-warning text-dark">Return Stock</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Material Modal -->
+    <div class="modal fade" id="addMaterialModal" tabindex="-1" aria-labelledby="addMaterialModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg invModal">
+            <div class="modal-content p-4 shadow-lg rounded-4">
+
+                <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                    <h4 class="modal-title text-white" id="addMaterialModalHeader">Add Material</h4>
+                    <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="row g-3" id="materialFormData" onsubmit="addMaterial(event)">
+<!--                        select category-->
+                        <div class="col-md-6">
+                            <label for="materialCategory" class="form-label">Material Category</label><label class="text-center form-label text-opacity-75">(Paper,Ink,Powder Spray .....)</label>
+                            <select class="form-select form-control" id="materialCategory" name="materialCategory" required>
+                                <option value="" disabled selected>Select Category</option>
+                            </select>
+                    <!--select material name -->
+                        </div>
+                        <div class="col-md-6 materials">
+                            <label for="materialName" class="form-label">Material</label>
+                            <select id="materialName" name="materialName" class="form-control form-select"  required>
+                                <option selected disabled>Select Material</option>
+                                <option th:value="custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="materialgsm" class="form-label">GSM</label>
+                            <input type="number" class="form-control" id="materialgsm" name="materialgsm" placeholder="Enter quantity" required>
+                            <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="sheetperream" class="form-label">Sheet per ream</label>
+                            <input type="number" class="form-control" id="sheetperream" name="sheetperream" placeholder="Enter quantity" required>
+                        </div>
+<!--                        reorder level-->
+                        <div class="col-md-6">
+                            <label for="reorderlevel" class="form-label">Reorder level</label>
+                            <input type="number" class="form-control" id="reorderlevel" name="reorderlevel" placeholder="Enter quantity" required>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-md-4 " id="hightContainer">
+                                    <label for="hightofpaper" class="form-label">Hight of paper</label>
+                                    <input type="number" class="form-control" id="hightofpaper" name="hightofpaper" placeholder="Enter reorder level" >
+                           </div>
+                            <div class="col-md-4 " id="widthContainer">
+                                <label for="widthtofpaper" class="form-label">Width of paper</label>
+                                <input type="number" class="form-control" id="widthtofpaper" name="widthtofpaper" placeholder="Enter reorder level" >
+                            </div>
+
+                            <div class="col-md-4 " id="weidthContainer">
+                                <label class="form-label">Weight/liter</label>
+                                <input type="number" class="form-control" id="weight" name="weight" placeholder="Enter the weight" >
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="materialUnit" class="form-label">Units</label>
+                            <select class="form-select" id="materialUnit" name="units" required>
+                                <option selected disabled>Select Unit</option>
+                                <option value="Sheets">Sheets</option>
+                                <option value="Liters">Liters</option>
+                                <option value="Kg">Kg</option>
+                                <option value="Pieces">Pieces</option>
+                                <option value="Boxes">Boxes</option>
+                            </select>
+                        </div>
+
+
+                        <div class="col-12 text-end mt-4">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Material</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- link jquery -->
+    <script th:src="@{/js/jquery-4.0.0.min.js}"></script>
+
+    <!-- link sweetalert css and js -->
+    <script th:src="@{/sweetalert2/sweetalert2.min.js}"></script>
+
+    <!-- link common js file -->
+    <script th:src="@{/js/common.js}"></script>
+
+    <!-- link inventory js file -->
+    <script th:src="@{/js/inventory.js}"></script>
+
+    <!-- link js bootstrap -->
+    <script th:src="@{/css/bootstrap-5.3.7-dist/js/bootstrap.bundle.min.js}"></script>
+
+    <script>
+        // Simple script to auto-fill current date
+        document.addEventListener('DOMContentLoaded', function () {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('grnDate').value = today;
+            document.getElementById('usageDate').value = today;
+        });
+    </script>
+</body>
+
+</html>

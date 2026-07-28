@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+</head>
+
+<body>
+
+    <!-- Sidebar Fragment -->
+    <div th:fragment="sidebar(activePage)" class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                    fill="#FFFFFF">
+                    <path
+                        d="M640-640v-120H320v120h-80v-200h480v200h-80Zm-480 80h640-640Zm560 100q17 0 28.5-11.5T760-500q0-17-11.5-28.5T720-540q-17 0-28.5 11.5T680-500q0 17 11.5 28.5T720-460ZM640-200v-160H320v160h320Zm80 80H240v-160H80v-240q0-51 35-85.5t85-34.5h560q51 0 85.5 34.5T880-520v240H720v160Zm80-240v-160q0-17-11.5-28.5T760-560H200q-17 0-28.5 11.5T160-520v160h80v-80h480v80h80Z" />
+                </svg>
+            </div>
+            <div class="brand-info">
+                <div class="brand-name">Thisara Printers</div>
+                <!-- <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">PRO EDITION</div> -->
+            </div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a th:href="@{/dashboard}" class="menu-link"
+                    th:classappend="${activePage == 'dashboard' ? 'active' : ''}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path
+                            d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z" />
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li class="menu-item" sec:authorize="hasAuthority('Order_VIEW')">
+                <a th:href="@{/order/management}" class="menu-link"
+                    th:classappend="${activePage == 'orders' ? 'active' : ''}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path
+                            d="M280-80q-33 0-56.5-23.5T200-160q0-33 23.5-56.5T280-240q33 0 56.5 23.5T360-160q0 33-23.5 56.5T280-80Zm400 0q-33 0-56.5-23.5T600-160q0-33 23.5-56.5T680-240q33 0 56.5 23.5T760-160q0 33-23.5 56.5T680-80ZM160-760v-80h720v80H160Z" />
+                    </svg>
+                    <span>Orders</span>
+                </a>
+            </li>
+
+            <li class="menu-item" sec:authorize="hasAuthority('Production_VIEW')">
+                <a th:href="@{/production/management}" class="menu-link"
+                    th:classappend="${activePage == 'production' ? 'active' : ''}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path
+                            d="M160-240v-80h640v80H160Zm0-160v-80h640v80H160Zm0-160v-80h640v80H160ZM160-240v-80h640v80H160Z" />
+                    </svg>
+                    <span>Job Tracking</span>
+                </a>
+            </li>
+
+            <li class="menu-item" sec:authorize="hasAuthority('Production_VIEW')">
+                <a th:href="@{/production/staff}" class="menu-link"
+                    th:classappend="${activePage == 'staff' ? 'active' : ''}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path
+                            d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM240-80q-33 0-56.5-23.5T160-160q0-33 23.5-56.5T240-240q33 0 56.5 23.5T320-160q0 33-23.5 56.5T240-80Zm480 0q-33 0-56.5-23.5T640-160q0-33 23.5-56.5T720-240q33 0 56.5 23.5T800-160q0 33-23.5 56.5T720-80Z" />
+                    </svg>
+                    <span>Production Staff</span>
+                </a>
+            </li>
+            <!-- 
+            <li class="menu-item" sec:authorize="hasAuthority('Quotation_VIEW')">
+                <a href="#" class="menu-link" th:classappend="${activePage == 'quotation' ? 'active' : ''}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path
+                            d="M280-400h400v-80H280v80Zm0-120h400v-80H280v80Zm0-120h400v-80H280v80ZM160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-480H160v480Zm0 0v-480 480Z" />
+                    </svg>
+                    <span>Quote Calculator</span>
+                </a>
+            </li> -->
+
+            <li class="menu-item">
+                <a th:href="@{/reports}" class="menu-link"
+                    th:classappend="${activePage == 'reports' ? 'active' : ''}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path d="M320-240h60v-200h-60v200Zm100 0h60v-320h-60v320Zm100 0h60v-120h-60v120Zm-260 80q-33 0-56.5-23.5T180-240v-480q0-33 23.5-56.5T260-800h440q33 0 56.5 23.5T780-720v480q0 33-23.5 56.5T700-160H260Zm0-80h440v-480H260v480Zm0 0v-480 480Z"/>
+                    </svg>
+                    <span>Reports</span>
+                </a>
+            </li>
+
+            <li class="menu-item" sec:authorize="hasAuthority('Inventory_VIEW')">
+                <a th:href="@{/inventory/management}" class="menu-link" th:classappend="${activePage == 'inventory' ? 'active' : ''}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path
+                            d="M440-183v-274L200-596v274l240 139Zm80 0 240-139v-274L520-457v274Zm-40-343 237-137-237-137-237 137 237 137ZM160-665v343q0 23 11.5 42.5T202-250l240 139q10 6 19 8.5t19 2.5q10 0 19-2.5t19-8.5l240-139q21-12 32.5-31.5T800-322v-343q0-23-11.5-42.5T758-738L518-877q-10-6-19-8.5t-19-2.5q-10 0-19 2.5t-19 8.5L202-738q-21-12-32.5-31.5T160-665Z" />
+                    </svg>
+                    <span>Inventory</span>
+                </a>
+            </li>
+
+            <li class="menu-item" sec:authorize="hasAuthority('Supplier_VIEW')">
+                <a th:href="@{/supplier/suppliermodel}" class="menu-link" th:classappend="${activePage == 'suppliers' ? 'active' : ''}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path
+                            d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-240v-80h640v80H160Z" />
+                    </svg>
+                    <span>Suppliers</span>
+                </a>
+            </li>
+
+            <li class="menu-item">
+                <a th:href="@{/payment/management}" class="menu-link" th:classappend="${activePage == 'payments' ? 'active' : ''}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path d="M560-440q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35ZM280-320q-33 0-56.5-23.5T200-400v-320q0-33 23.5-56.5T280-800h560q33 0 56.5 23.5T920-720v320q0 33-23.5 56.5T840-320H280Zm80-80h400q0-33 23.5-56.5T840-480v-160q-33 0-56.5-23.5T760-720H360q0 33-23.5 56.5T280-640v160q33 0 56.5 23.5T360-400Zm-240 240q-33 0-56.5-23.5T40-240v-440h80v440h680v80H120Zm160-240v-320 320Z"/>
+                    </svg>
+                    <span>Payments</span>
+                </a>
+            </li>
+
+            <li class="menu-item" sec:authorize="hasAuthority('Customer_VIEW')">
+                <a th:href="@{/customer/customermodel}" class="menu-link"
+                    th:classappend="${activePage == 'customers' ? 'active' : ''}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path
+                            d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z" />
+                    </svg>
+                    <span>Customers</span>
+                </a>
+            </li>
+
+            <li class="menu-item" sec:authorize="hasAuthority('Employee_VIEW')">
+                <a th:href="@{/employees/getemployees}" class="menu-link"
+                    th:classappend="${activePage == 'employees' ? 'active' : ''}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path
+                            d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z" />
+                    </svg>
+                    <span>Employees</span>
+                </a>
+            </li>
+
+            <li class="menu-item" sec:authorize="hasAuthority('User_VIEW')">
+                <a th:href="@{/user/usermodel}" class="menu-link"
+                    th:classappend="${activePage == 'users' ? 'active' : ''}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path
+                            d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z" />
+                    </svg>
+                    <span>User Management</span>
+                </a>
+            </li>
+        </ul>
+
+        <div style="padding: 24px; border-top: 1px solid var(--border-color);">
+            <a th:href="@{/logout}" class="menu-link" style="color: #ff5252;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                    <path
+                        d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-56-58 102-102H360v-80h326L584-622l56-58 200 200-200 200Z" />
+                </svg>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Topbar Fragment -->
+    <div th:fragment="topbar" class="topbar">
+        <div class="search-container">
+            <!-- <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                fill="currentColor">
+                <path
+                    d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+            </svg>
+            <input type="text" placeholder="Search orders, customers, products..."> -->
+        </div>
+
+        <div class="topbar-right">
+            <div style="position: relative; cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                    fill="var(--text-muted)">
+                    <path
+                        d="M160-200v-80h80v-280q0-83 50-147.5T420-792v-28q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v28q80 20 130 84.5T720-560v280h80v80H160Zm320-300Zm0 420q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM320-280h320v-280q0-66-47-113t-113-47q-66 0-113 47t-47 113v280Z" />
+                </svg>
+                <div
+                    style="position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background-color: var(--accent); border-radius: 50%; border: 2px solid var(--bg-main);">
+                </div>
+            </div>
+
+            <div class="user-profile">
+                <div class="user-info text-end">
+                    <span class="user-name" th:text="${#authentication.name}">John Doe</span>
+                    <span class="user-role">Administrator</span>
+                </div>
+                <div class="user-avatar" th:text="${#strings.substring(#authentication.name, 0, 1).toUpperCase()}">J
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,302 @@
+
+/* Navbar - matches the rest of the app */
+.top-navbar {
+    background-color: #1A1A1A !important;
+}
+
+        .report-card {
+            background: var(--bg-card, #fff);
+            border-radius: 16px;
+            border: 1px solid var(--border-color, #e2e8f0);
+            padding: 20px 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .report-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .report-card.active-card {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px #6366f133;
+        }
+
+        .report-card .icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .report-card h6 {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+
+        .report-card p {
+            font-size: 0.78rem;
+            color: var(--text-muted, #64748b);
+            margin: 0;
+        }
+
+        .filter-bar {
+            background: var(--bg-card, #fff);
+            border-radius: 14px;
+            border: 1px solid var(--border-color, #e2e8f0);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+        }
+
+        .filter-bar label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted, #64748b);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+
+        .filter-bar .form-control {
+            border-radius: 10px;
+            border: 1px solid var(--border-color, #e2e8f0);
+            font-size: 0.9rem;
+            padding: 8px 14px;
+        }
+
+        .stat-card {
+            background: var(--bg-card, #fff);
+            border-radius: 14px;
+            border: 1px solid var(--border-color, #e2e8f0);
+            padding: 20px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted, #64748b);
+            font-weight: 500;
+        }
+
+        .report-table-wrapper {
+            background: var(--bg-card, #fff);
+            border-radius: 14px;
+            border: 1px solid var(--border-color, #e2e8f0);
+            overflow: hidden;
+        }
+
+        .report-table-wrapper table {
+            margin: 0;
+            font-size: 0.87rem;
+        }
+
+        .report-table-wrapper thead th {
+            background: var(--bg-secondary, #f8fafc);
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted, #64748b);
+            border-bottom: 1px solid var(--border-color, #e2e8f0);
+            padding: 12px 16px;
+            white-space: nowrap;
+        }
+
+        .report-table-wrapper tbody td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color, #e2e8f0);
+            vertical-align: middle;
+        }
+
+        .report-table-wrapper tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .report-table-wrapper tbody tr:hover {
+            background: var(--bg-secondary, #f8fafc);
+        }
+
+        .badge-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted, #64748b);
+        }
+
+        .empty-state svg {
+            opacity: 0.3;
+            margin-bottom: 12px;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 24px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-generate:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            color: #fff;
+        }
+
+        .btn-print {
+            background: transparent;
+            border: 1px solid var(--border-color, #e2e8f0);
+            border-radius: 10px;
+            padding: 9px 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-print:hover {
+            background: var(--bg-secondary, #f8fafc);
+        }
+
+        .loading-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 14px;
+            z-index: 10;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .report-content-area {
+            position: relative;
+        }
+
+        @media print {
+
+            .sidebar,
+            .topbar,
+            .filter-bar,
+            .report-selector,
+            .btn-generate,
+            .btn-print,
+            .page-header-actions {
+                display: none !important;
+            }
+
+            .main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .report-table-wrapper,
+            .stat-card {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+            }
+        }
+
+        /* Table Styles from order.css (Elegant Ink Theme) */
+        .tablestyle thead th {
+            background-color: #1B263B !important;
+            color: #FFFFFF !important;
+            border-color: #1B263B !important;
+            vertical-align: middle;
+        }
+
+        .tablestyle tbody tr {
+            background-color: #FFFFFF !important;
+            color: #333;
+            transition: background-color 0.2s;
+        }
+
+        .tablestyle tbody tr:hover {
+            background-color: #E3F2FD !important;
+        }
+
+        .tablestyle {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 0;
+            animation: slideUpFadeIn 0.8s ease-out;
+        }
+
+        .tablestyle thead {
+            background-color: #1B263B;
+            color: #FFFFFF;
+        }
+
+        .tablestyle th {
+            padding: 16px 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            border: none;
+        }
+
+        .tablestyle tbody tr {
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #e8e8e8;
+            transition: background-color 0.2s, transform 0.2s;
+            opacity: 0;
+            animation: slideUpFadeIn 0.5s ease-out forwards;
+        }
+
+        /* Staggered Entrance Animation */
+        .tablestyle tbody tr:nth-child(1) { animation-delay: 0.1s; }
+        .tablestyle tbody tr:nth-child(2) { animation-delay: 0.15s; }
+        .tablestyle tbody tr:nth-child(3) { animation-delay: 0.2s; }
+        .tablestyle tbody tr:nth-child(4) { animation-delay: 0.25s; }
+        .tablestyle tbody tr:nth-child(5) { animation-delay: 0.3s; }
+        .tablestyle tbody tr:nth-child(6) { animation-delay: 0.35s; }
+        .tablestyle tbody tr:nth-child(7) { animation-delay: 0.4s; }
+        .tablestyle tbody tr:nth-child(8) { animation-delay: 0.45s; }
+        .tablestyle tbody tr:nth-child(9) { animation-delay: 0.5s; }
+        .tablestyle tbody tr:nth-child(n+10) { animation-delay: 0.55s; }
+
+        .tablestyle td {
+            padding: 14px 12px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 0.9rem;
+            color: #333;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .tablestyle tbody tr:hover {
+            background-color: #E3F2FD;
+        }
+
+        @keyframes slideUpFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+   
