@@ -454,6 +454,13 @@ $(document).ready(function () {
     // Reset Return Stock form when modal is closed
     $('#returnStockModal').on('hidden.bs.modal', function () {
         document.getElementById('returnStockFormData').reset();
+        updateReturnStockFields();
+    });
+
+    // Only existing, ongoing jobs can receive returned material.
+    $('#returnStockModal').on('show.bs.modal', function () {
+        loadOngoingProductionJobs('returnJob');
+        updateReturnStockFields();
     });
 
     // Auto-fill fields when variant is selected in Return Stock modal
@@ -468,7 +475,11 @@ $(document).ready(function () {
         if (width !== undefined) $('#returnWidth').val(width);
         if (height !== undefined) $('#returnHeight').val(height);
         if (weight !== undefined) $('#returnWeight').val(weight);
+        updateReturnStockFields();
     });
+
+    $('#returnQty, #returnJob, #returnHeight, #returnWidth, #returnWeight').on('input change', updateReturnStockFields);
+    $('#returnUnit').on('change', updateReturnStockFields);
 });
 
 // Load purchase orders into the GRN modal dropdown
@@ -858,14 +869,21 @@ function deleteStockLot(stockLotId) {
 function submitReturnStock(event) {
     event.preventDefault();
 
+    const form = document.getElementById('returnStockFormData');
+    updateReturnStockFields();
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
     const returnData = {
         variantId: parseInt(document.getElementById('returnItem').value),
         returnedQty: parseInt(document.getElementById('returnQty').value),
         jobNo: document.getElementById('returnJob').value,
         unit: document.getElementById('returnUnit').value,
-        height: parseFloat(document.getElementById('returnHeight').value),
-        width: parseFloat(document.getElementById('returnWidth').value),
-        weight: parseFloat(document.getElementById('returnWeight').value)
+        height: returnNumberOrNull('returnHeight'),
+        width: returnNumberOrNull('returnWidth'),
+        weight: returnNumberOrNull('returnWeight')
     };
 
     const response = postHTTPService('/inventory/api/stocklot/return', 'POST', 'json', returnData);
@@ -886,6 +904,34 @@ function submitReturnStock(event) {
         const modal = bootstrap.Modal.getInstance(document.getElementById('returnStockModal'));
         if (modal) modal.hide();
     }
+}
+
+function returnNumberOrNull(id) {
+    const value = document.getElementById(id).value;
+    return value === '' ? null : parseFloat(value);
+}
+
+// Sheet returns require dimensions; kilogram returns require a weight. Other units
+// do not need those measurements, but keep any variant values visible for reference.
+function updateReturnStockFields() {
+    const unit = document.getElementById('returnUnit').value;
+    const height = document.getElementById('returnHeight');
+    const width = document.getElementById('returnWidth');
+    const weight = document.getElementById('returnWeight');
+    const submit = document.getElementById('returnStockSubmit');
+    if (!height || !width || !weight || !submit) return;
+
+    const isSheet = unit === 'Sheets';
+    const isWeight = unit === 'Kg';
+    height.required = isSheet;
+    width.required = isSheet;
+    weight.required = isWeight;
+    height.disabled = !isSheet;
+    width.disabled = !isSheet;
+    weight.disabled = !isWeight;
+
+    const form = document.getElementById('returnStockFormData');
+    submit.disabled = !form || !form.checkValidity();
 }
 
 // Open a professional print window for a single GRN
@@ -1000,8 +1046,8 @@ function printGRN(grnId) {
 }
 
 // Populate the Job ID dropdown with ongoing (non-dispatched) production jobs
-function loadOngoingProductionJobs() {
-    const select = document.getElementById('usageJob');
+function loadOngoingProductionJobs(selectId = 'usageJob') {
+    const select = document.getElementById(selectId);
     if (!select) return;
 
     select.innerHTML = '<option value="" selected disabled>Loading jobs...</option>';

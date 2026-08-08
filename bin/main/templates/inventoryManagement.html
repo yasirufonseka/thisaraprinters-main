@@ -370,15 +370,18 @@
                         </div>
                         <div class="col-md-6">
                             <label for="returnQty" class="form-label">Quantity Returned</label>
-                            <input type="number" class="form-control" id="returnQty" name="returnedQty" placeholder="Enter amount returned" required>
+                            <input type="number" class="form-control" id="returnQty" name="returnedQty"
+                                   placeholder="Enter amount returned" min="1" step="1" inputmode="numeric" required>
                         </div>
                         <div class="col-md-6">
                             <label for="returnJob" class="form-label">Job ID / Job No</label>
-                            <input type="text" class="form-control" id="returnJob" name="jobNo" placeholder="e.g. Job #1234" required>
+                            <select class="form-select" id="returnJob" name="jobNo" required>
+                                <option value="" selected disabled>Select Ongoing Production Job</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label for="returnUnit" class="form-label">Units</label>
-                            <select class="form-select" id="returnUnit" name="unit" required>
+                            <select class="form-select" id="returnUnit" name="unit" required disabled>
                                 <option selected disabled>Select Unit</option>
                                 <option value="Sheets">Sheets</option>
                                 <option value="Liters">Liters</option>
@@ -401,7 +404,7 @@
                         </div>
                         <div class="col-12 text-end mt-4">
                             <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-warning text-dark">Return Stock</button>
+                            <button type="submit" class="btn btn-warning text-dark" id="returnStockSubmit" disabled>Return Stock</button>
                         </div>
                     </form>
                 </div>
