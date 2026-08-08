@@ -23,22 +23,37 @@ public class ReportController {
         this.reportService = reportService;
     }
 
-    // ── Page ──────────────────────────────────────────────
+    // show the reports page          
     @GetMapping
     public ModelAndView reportsPage() {
         ModelAndView mav = new ModelAndView("reports");
         return mav;
     }
 
-    // ── 1. Sales / Quotation Summary Report ──────────────
+    /** Supplies the selectable values for the filters shown for a report type. */
+    @GetMapping("/filter-options")
+    @ResponseBody
+    public ResponseEntity<Map<String, List<String>>> filterOptions(
+            @RequestParam("type") String type,
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        try {
+            return ResponseEntity.ok(reportService.getFilterOptions(type, start, end));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    //  Sales / Quotation Summary Report 
     @GetMapping("/sales")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> salesReport(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam Map<String, String> filters) {
         try {
             Map<String, Object> result = reportService.getSalesReport(start, end);
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(reportService.applyFiltersAndRecalculate("sales", result, filters));
         } catch (Exception e) {
             Map<String, Object> err = new LinkedHashMap<>();
             err.put("error", "Sales report failed: " + e.getMessage());
@@ -51,10 +66,11 @@ public class ReportController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> inventoryReport(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam Map<String, String> filters) {
         try {
             Map<String, Object> result = reportService.getInventoryReport(start, end);
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(reportService.applyFiltersAndRecalculate("inventory", result, filters));
         } catch (Exception e) {
             Map<String, Object> err = new LinkedHashMap<>();
             err.put("error", "Inventory report failed: " + e.getMessage());
@@ -62,15 +78,16 @@ public class ReportController {
         }
     }
 
-    // ── 3. GRN Report ────────────────────────────────────
+    // GRN Report 
     @GetMapping("/grn")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> grnReport(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam Map<String, String> filters) {
         try {
             Map<String, Object> result = reportService.getGrnReport(start, end);
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(reportService.applyFiltersAndRecalculate("grn", result, filters));
         } catch (Exception e) {
             Map<String, Object> err = new LinkedHashMap<>();
             err.put("error", "GRN report failed: " + e.getMessage());
@@ -78,15 +95,16 @@ public class ReportController {
         }
     }
 
-    // ── 4. Purchase Order Report ──────────────────────────
+    // Purchase Order Report 
     @GetMapping("/purchase-orders")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> purchaseOrderReport(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam Map<String, String> filters) {
         try {
             Map<String, Object> result = reportService.getPurchaseOrderReport(start, end);
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(reportService.applyFiltersAndRecalculate("purchase-orders", result, filters));
         } catch (Exception e) {
             Map<String, Object> err = new LinkedHashMap<>();
             err.put("error", "Purchase order report failed: " + e.getMessage());
@@ -94,15 +112,16 @@ public class ReportController {
         }
     }
 
-    // ── 5. Production Status Report ───────────────────────
+    // Production Status Report 
     @GetMapping("/production")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> productionReport(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam Map<String, String> filters) {
         try {
             Map<String, Object> result = reportService.getProductionReport(start, end);
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(reportService.applyFiltersAndRecalculate("production", result, filters));
         } catch (Exception e) {
             Map<String, Object> err = new LinkedHashMap<>();
             err.put("error", "Production report failed: " + e.getMessage());
@@ -110,15 +129,16 @@ public class ReportController {
         }
     }
 
-    // ── 6. Supplier Price Comparison ──────────────────────
+    // Supplier Price Comparison Report
     @GetMapping("/supplier-price")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> supplierPriceReport(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam Map<String, String> filters) {
         try {
             Map<String, Object> result = reportService.getSupplierPriceReport(start, end);
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(reportService.applyFiltersAndRecalculate("supplier-price", result, filters));
         } catch (Exception e) {
             Map<String, Object> err = new LinkedHashMap<>();
             err.put("error", "Supplier price report failed: " + e.getMessage());

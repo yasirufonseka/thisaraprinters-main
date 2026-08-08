@@ -6,5 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface PriceRequestReplyRepo extends JpaRepository<PriceRequestReply, Integer> {
+    boolean existsBySupplier_Id(Integer supplierId);
+
     List<PriceRequestReply> findByPriceRequestId(Integer priceRequestId);
 }

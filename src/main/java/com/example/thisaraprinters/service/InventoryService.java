@@ -1,6 +1,7 @@
 package com.example.thisaraprinters.service;
 
 import com.example.thisaraprinters.dto.InventoryDto;
+import com.example.thisaraprinters.dto.MaterialUsageDto;
 import com.example.thisaraprinters.model.*;
 import com.example.thisaraprinters.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,10 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.domain.Sort;
 
 @Service
@@ -24,6 +28,8 @@ public class InventoryService {
     private final StockLotsRepo stockLotsRepo;
     private final com.example.thisaraprinters.repository.MaterialVariantRepo materialVariantRepo;
     private final PurchaseOrderRepo purchaseOrderRepo;
+    private final ProductionStockReservationRepo reservationRepo;
+    private final ProductionRepo productionRepo;
 
     @Autowired
     public InventoryService(InventoryRepository inventoryRepository,
@@ -32,7 +38,8 @@ public class InventoryService {
                             UserRepo userRepo,
                             com.example.thisaraprinters.repository.StockLotsRepo stockLotsRepo,
                             com.example.thisaraprinters.repository.MaterialVariantRepo materialVariantRepo,
-                            PurchaseOrderRepo purchaseOrderRepo) {
+                            PurchaseOrderRepo purchaseOrderRepo, ProductionStockReservationRepo reservationRepo,
+                            ProductionRepo productionRepo) {
         this.inventoryRepository = inventoryRepository;
         this.materialRepo = materialRepo;
         this.supplierRepo = supplierRepo;
@@ -40,23 +47,28 @@ public class InventoryService {
         this.stockLotsRepo = stockLotsRepo;
         this.materialVariantRepo = materialVariantRepo;
         this.purchaseOrderRepo = purchaseOrderRepo;
+        this.reservationRepo = reservationRepo;
+        this.productionRepo = productionRepo;
     }
-
+    //get save all GRNs
     public List<Inventory> getAllGRNs() {
         return inventoryRepository.findAll();
     }
-
+    //Get all the Stock
     public List<StockLots> getAllStockLots() {
         return stockLotsRepo.findAll();
     }
 
+    //save GRN
     @Transactional
     public void saveFullGrn(InventoryDto dto) {
-
-        // ── Issue 3 Fix: Validate all required inputs before touching the DB ──
+       // StockLots stockLots = stockLotsRepo.findById(dto.setPurchaseOrderId());
+        //  Validate all required inputs before touching the DB 
         validateGrnInput(dto);
 
         Inventory inventory = new Inventory();
+
+        int quantity = dto.getRecivedquantity() ;
 
         inventory.setSupplierInvoiceNo(dto.getSupplierInvoiceNo());
         inventory.setBatchNo(dto.getBatchNo());
@@ -68,7 +80,7 @@ public class InventoryService {
 
         // Set relationships
         if (dto.getVariant() != null && dto.getVariant().getId() != null) {
-            com.example.thisaraprinters.model.MaterialVariant variant = materialVariantRepo.findById(dto.getVariant().getId()).orElse(null);
+           MaterialVariant variant = materialVariantRepo.findById(dto.getVariant().getId()).orElse(null);
             inventory.setVariant(variant);
         }
         if (dto.getPurchaseOrderId() != null) {
@@ -108,7 +120,7 @@ public class InventoryService {
         }
     }
 
-    // ── Validation helper ──
+    //  Validation helper 
     private void validateGrnInput(InventoryDto dto) {
         if (dto == null) {
             throw new IllegalArgumentException("GRN data cannot be null.");
@@ -136,15 +148,15 @@ public class InventoryService {
         }
     }
 
-    // ── Get GRN data by StockLot ID (for edit modal) ──
+    //  Get GRN data by StockLot ID (for edit modal) 
     @Transactional
-    public java.util.Map<String, Object> getGrnByStockLotId(Integer stockLotId) {
+    public Map<String, Object> getGrnByStockLotId(Integer stockLotId) {
         StockLots stockLot = stockLotsRepo.findById(stockLotId)
                 .orElseThrow(() -> new IllegalArgumentException("Stock lot not found: " + stockLotId));
         Inventory inv = stockLot.getInventory();
         if (inv == null) throw new IllegalArgumentException("No GRN linked to this stock lot.");
 
-        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        Map<String, Object> result = new HashMap<>();
         result.put("stockLotId",       stockLot.getId());
         result.put("inventoryId",      inv.getId());
         result.put("grnNumber",        inv.getGrnNumber());
@@ -162,12 +174,14 @@ public class InventoryService {
         result.put("supplierName",     inv.getPurchaseOrder() != null && inv.getPurchaseOrder().getSupplier() != null
                                         ? inv.getPurchaseOrder().getSupplier().getCompanyname() : null);
         result.put("receivedByUserId", inv.getReceivedByUser() != null ? inv.getReceivedByUser().getId() : null);
+        result.put("materialName",     inv.getVariant() != null ? (inv.getVariant().getMaterial().getMaterial() + " (GSM: " + inv.getVariant().getGsm() + ")") : "-");
+        result.put("receivedByUsername", inv.getReceivedByUser() != null ? inv.getReceivedByUser().getUsername() : "-");
         return result;
     }
 
-    // ── Get GRN data by GRN (Inventory) ID (for edit modal) ──
+    //  Get GRN data by Inventory ID for edit modal
     @Transactional
-    public java.util.Map<String, Object> getGrnById(Integer grnId) {
+    public Map<String, Object> getGrnById(Integer grnId) {
         Inventory inv = inventoryRepository.findById(grnId)
                 .orElseThrow(() -> new IllegalArgumentException("GRN not found: " + grnId));
 
@@ -175,7 +189,7 @@ public class InventoryService {
                 ? inv.getStockLots().get(0)
                 : null;
 
-        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        Map<String, Object> result = new HashMap<>();
         result.put("stockLotId",       stockLot != null ? stockLot.getId() : null);
         result.put("inventoryId",      inv.getId());
         result.put("grnNumber",        inv.getGrnNumber());
@@ -193,10 +207,12 @@ public class InventoryService {
         result.put("supplierName",     inv.getPurchaseOrder() != null && inv.getPurchaseOrder().getSupplier() != null
                                         ? inv.getPurchaseOrder().getSupplier().getCompanyname() : null);
         result.put("receivedByUserId", inv.getReceivedByUser() != null ? inv.getReceivedByUser().getId() : null);
+        result.put("materialName",     inv.getVariant() != null ? (inv.getVariant().getMaterial().getMaterial() + " (GSM: " + inv.getVariant().getGsm() + ")") : "-");
+        result.put("receivedByUsername", inv.getReceivedByUser() != null ? inv.getReceivedByUser().getUsername() : "-");
         return result;
     }
 
-    // ── Update GRN and its linked StockLot ──
+    //  Update GRN and its linked StockLot  
     @Transactional
     public void updateGrnByStockLotId(Integer stockLotId, InventoryDto dto) {
         validateGrnInput(dto);
@@ -245,7 +261,7 @@ public class InventoryService {
         stockLotsRepo.save(stockLot);
     }
 
-    // ── Delete StockLot and its linked Inventory record ──
+    //  Delete StockLot and its linked Inventory record
     @Transactional
     public void deleteByStockLotId(Integer stockLotId) {
         StockLots stockLot = stockLotsRepo.findById(stockLotId)
@@ -258,7 +274,7 @@ public class InventoryService {
         }
     }
 
-    // ── Save Returned Stock as a Stock Lot ──
+    //  Save Returned Stock as a Stock Lot
     @Transactional
     public void saveReturnStock(com.example.thisaraprinters.dto.ReturnStockDto dto) {
         if (dto.getVariantId() == null) {
@@ -275,6 +291,8 @@ public class InventoryService {
                 materialVariantRepo.findById(dto.getVariantId())
                 .orElseThrow(() -> new IllegalArgumentException("Variant not found with ID: " + dto.getVariantId()));
 
+        productionRepo.findByOrderId(dto.getJobNo().trim())
+                .orElseThrow(() -> new IllegalArgumentException("Production job not found."));
         StockLots stockLot = new StockLots();
         stockLot.setVariant(variant);
         stockLot.setQuantity(dto.getReturnedQty());
@@ -290,6 +308,39 @@ public class InventoryService {
         stockLotsRepo.save(stockLot);
     }
 
-}
+    /** Consumes only stock already reserved for the production job. */
+    @Transactional
+    public void recordUsage(MaterialUsageDto dto) {
+        if (dto == null || dto.getVariantId() == null || dto.getQuantityUsed() == null || dto.getQuantityUsed() <= 0 || dto.getJobNo() == null || dto.getJobNo().isBlank())
+            throw new IllegalArgumentException("Job, material variant, and a positive quantity are required.");
+        int remaining = dto.getQuantityUsed();
+        List<ProductionStockReservation> reservations = reservationRepo
+                .findByProductionOrderIdAndStockLotVariantIdOrderById(dto.getJobNo().trim(), dto.getVariantId());
+        for (ProductionStockReservation reservation : reservations) {
+            int unused = reservation.getReservedQuantity() - reservation.getUsedQuantity();
+            int use = Math.min(unused, remaining);
+            if (use <= 0) continue;
+            StockLots lot = reservation.getStockLot();
+            lot.setQuantity(lot.getQuantity() - use);
+            lot.setReservedQuantity(Math.max(0, lot.getReservedQuantity() - use));
+            if (lot.getQuantity() == 0) lot.setStatus("Consumed"); else if (lot.getReservedQuantity() == 0) lot.setStatus("Available");
+            reservation.setUsedQuantity(reservation.getUsedQuantity() + use);
+            stockLotsRepo.save(lot); reservationRepo.save(reservation);
+            remaining -= use;
+            if (remaining == 0) return;
+        }
+        throw new IllegalArgumentException("Usage exceeds stock reserved for this job.");
+    }
 
+    @Transactional
+    public Materials addMaterials(){
+        Materials materials = new Materials();
+        materials.setMaterial("New Material");
+        materials.setStatus("Active");
+        return materialRepo.save(materials);
+    }
+
+    
+
+}
 

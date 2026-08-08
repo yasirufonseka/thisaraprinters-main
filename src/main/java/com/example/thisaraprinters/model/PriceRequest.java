@@ -52,4 +52,13 @@ public class PriceRequest {
     @JsonIgnore
     @OneToMany(mappedBy = "priceRequest")
     private List<PriceRequestReply> replies;
+
+    @Transient
+    public Double getTotalAmount() {
+        if (replies == null || replies.isEmpty()) {
+            return 0.0;
+        }
+
+        return replies.get(replies.size() - 1).getTotalAmount();
+    }
 }

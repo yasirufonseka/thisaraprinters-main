@@ -77,6 +77,11 @@ public class SupplierController {
         return ResponseEntity.status(200).body(Map.of("message", supplierService.updateSupplier(supplierData, id)));
     }
 
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Map<String, String>> deleteSupplier(@PathVariable("id") int id) {
+        return ResponseEntity.ok(Map.of("message", supplierService.deleteSupplier(id)));
+    }
+
     //price requset part
     @PostMapping("/pricerequest")
     public ResponseEntity<Map<String, String>> getPricerequest(@RequestBody PriceRequestDto request) {
@@ -112,6 +117,11 @@ public class SupplierController {
     @GetMapping("/pricerequest/{id}")
     public ResponseEntity<com.example.thisaraprinters.model.PriceRequest> getPriceRequestById(@PathVariable("id") int id) {
         return ResponseEntity.status(200).body(supplierService.getPriceRequestById(id));
+    }
+
+    @GetMapping("/pricerequest/{id}/matching-suppliers")
+    public ResponseEntity<List<Supplier>> getMatchingSuppliersByPriceRequestCategory(@PathVariable("id") int id) {
+        return ResponseEntity.status(200).body(supplierService.getSuppliersByPriceRequestCategory(id));
     }
     
     // Get completed price requests

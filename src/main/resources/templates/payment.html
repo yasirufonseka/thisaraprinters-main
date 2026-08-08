@@ -52,9 +52,8 @@
                     </button>
                 </div>
 
-                <!-- ══════════════════════════════════════════════════════════ -->
-                <!--  TAB 1: SUPPLIER PAYMENTS                                 -->
-                <!-- ══════════════════════════════════════════════════════════ -->
+                <!--  TAB 1: SUPPLIER PAYMENTS-->
+
                 <div id="supplierPaymentsTab" class="tab-content" style="display: block;">
 
                     <!-- Summary Cards -->
@@ -83,6 +82,9 @@
                             </span>
                             <input type="text" class="searchInput" id="searchSupplierOrder" placeholder="Search by supplier, PO number or item…">
                         </div>
+                        <button class="btn btn-gold ms-3" style="white-space: nowrap;" onclick="openAddSupplierPaymentModal()">
+                            + Record Payment
+                        </button>
                     </div>
 
                     <!-- Supplier Orders Table -->
@@ -94,26 +96,27 @@
                                     <th>Supplier</th>
                                     <th>Order Date</th>
                                     <th>Items</th>
-                                    <th>Quantity</th>
+                                    <th>Paid Amount</th>
                                     <th>Payment Status</th>
                                     <th>Actions</th>
+
                                 </tr>
                             </thead>
                             <tbody id="supplierOrdersBody">
-                                <tr>
-                                    <td colspan="7" class="text-center py-4">
-                                        <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
-                                        Loading…
-                                    </td>
+                                <tr th:each="payment : ${payments}">
+                                   <td th:text="PO + ${payment.purchaseOrder.id}"></td>
+                                    <td th:text="PO + ${payment.supplier.companyname}"></td>
+                                    <td th:text="${payment.purchaseOrder.orderDate}"></td>
+                                    <td th:text="${payment.purchaseOrder.items}"></td>
+                                    <td th:text="${payment.paidAmount}"></td>
+                                    <td th:text="${#temporals.format(payment.createdAt, 'yyyy-mm-dd')}"></td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- ══════════════════════════════════════════════════════════ -->
                 <!--  TAB 2: CUSTOMER PAYMENTS                                 -->
-                <!-- ══════════════════════════════════════════════════════════ -->
                 <div id="customerPaymentsTab" class="tab-content">
 
                     <!-- Summary Cards -->
@@ -177,9 +180,95 @@
             </div>
         </div>
 
-        <!-- ══════════════════════════════════════════════════════════════════ -->
         <!--  MODALS                                                            -->
-        <!-- ══════════════════════════════════════════════════════════════════ -->
+
+        <!-- Add Supplier Payment Modal -->
+        <div class="modal fade" id="addSupplierPaymentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg payModal">
+                <div class="modal-content p-4 shadow-lg rounded-4">
+                    <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
+                        <h4 class="modal-title text-white">Record Supplier Payment</h4>
+                        <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addSupplierPaymentForm" onsubmit="submitAddSupplierPayment(event)" enctype="multipart/form-data">
+                            <input type="hidden" id="spAddPoId" name="poId">
+                            <input type="hidden" id="spAddTotalAmount" value="">
+
+                            <div class="mb-3">
+                                <label class="form-label">Order Total Amount:</label>
+                                <div class="p-2 border rounded-3 d-flex justify-content-between align-items-center" style="background:#f8f9fa;">
+                                    <span class="text-muted" style="font-size:0.85rem;">Payable Amount</span>
+                                    <strong id="spAddTotalAmountDisplay">-</strong>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="spAddPoSelect" class="form-label">Purchase Order: <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="spAddPoSelect" onchange="onSupplierPoSelected(this)" required>
+                                        <option value="" disabled selected>Select Purchase Order</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="spAddStatus" class="form-label">Payment Status: <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="spAddStatus" name="paymentStatus" required>
+                                        <option value="" disabled selected>Select Status</option>
+                                        <option value="Paid">Paid (Full)</option>
+                                        <option value="Partial">Partial Payment</option>
+                                        <option value="Pending">Pending</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="spAddMethod" class="form-label">Payment Method: <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="spAddMethod" name="paymentMethod" required>
+                                        <option value="" disabled selected>Select Method</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Cheque">Cheque</option>
+                                        <option value="Card">Card</option>
+                                        <option value="Bank Transfer">Bank Transfer</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="spAddAmount" class="form-label">Paid Amount (Rs.): <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" min="0" class="form-control" id="spAddAmount" name="paidAmount"
+                                           placeholder="Enter amount" required oninput="validateSupplierAddPaidAmount()">
+                                    <div id="spAddAmountWarning" class="text-warning mt-1" style="font-size:0.82rem; display:none;">
+                                        ⚠ Paid amount is less than total — status will be saved as <strong>Partial</strong>.
+                                    </div>
+                                    <div id="spAddAmountSuccess" class="text-success mt-1" style="font-size:0.82rem; display:none;">
+                                        ✓ Full amount covered — status will be saved as <strong>Paid</strong>.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="spAddReferenceNo" class="form-label">Reference No (Optional):</label>
+                                    <input type="text" class="form-control" id="spAddReferenceNo" name="referenceNo" placeholder="Cheque / Transfer reference">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="spAddProof" class="form-label">Payment Proof:</label>
+                                <div class="form-text mb-2">Upload receipt or confirmation (PDF, JPG, PNG – max 5MB)</div>
+                                <input type="file" class="form-control" id="spAddProof" name="paymentProof" accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="spAddNotes" class="form-label">Notes (Optional):</label>
+                                <textarea id="spAddNotes" name="paymentNotes" class="form-control" rows="3" placeholder="Add any notes…"></textarea>
+                            </div>
+
+                            <div class="d-flex flex-row justify-content-end gap-3">
+                                <button type="submit" class="btn btn-teal action-btn">Record Payment</button>
+                                <button type="button" class="btn btn-secondary action-btn" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Edit Supplier Payment Modal -->
         <div class="modal fade" id="editSupplierPaymentModal" tabindex="-1" aria-hidden="true">
@@ -193,13 +282,25 @@
                         <form id="editSupplierPaymentForm" onsubmit="submitSupplierPaymentUpdate(event)" enctype="multipart/form-data">
                             <input type="hidden" id="spEditPoId" name="poId">
 
+                            <!-- Hidden fields for total amount comparison -->
+                            <input type="hidden" id="spTotalAmount" value="">
+
+                            <div class="mb-3">
+                                <label class="form-label">Order Total Amount:</label>
+                                <div class="p-2 border rounded-3 d-flex justify-content-between align-items-center" style="background:#f8f9fa;">
+                                    <span class="text-muted" style="font-size:0.85rem;">Payable Amount</span>
+                                    <strong id="spTotalAmountDisplay">-</strong>
+                                </div>
+                            </div>
+
                             <div class="mb-3">
                                 <label for="spEditStatus" class="form-label">Payment Status: <span class="text-danger">*</span></label>
                                 <select class="form-select" id="spEditStatus" name="paymentStatus"
                                         onchange="handleSupplierStatusChange(this.value)" required>
                                     <option value="Unpaid">Unpaid</option>
                                     <option value="Pending">Pending</option>
-                                    <option value="Paid">Paid</option>
+                                    <option value="Partial">Partial Payment</option>
+                                    <option value="Paid">Paid (Full)</option>
                                 </select>
                             </div>
 
@@ -216,7 +317,14 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="spEditAmount" class="form-label">Paid Amount (Rs.): <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" class="form-control" id="spEditAmount" name="paidAmount" placeholder="Enter amount">
+                                    <input type="number" step="0.01" min="0" class="form-control" id="spEditAmount" name="paidAmount"
+                                           placeholder="Enter amount" oninput="validateSupplierPaidAmount()">
+                                    <div id="spAmountWarning" class="text-warning mt-1" style="font-size:0.82rem; display:none;">
+                                        ⚠ Paid amount is less than total — status will be saved as <strong>Partial</strong>.
+                                    </div>
+                                    <div id="spAmountSuccess" class="text-success mt-1" style="font-size:0.82rem; display:none;">
+                                        ✓ Full amount covered — status will be saved as <strong>Paid</strong>.
+                                    </div>
                                 </div>
                             </div>
 
@@ -355,6 +463,25 @@
                     </div>
                     <div class="modal-body">
                         <form id="editCustomerPaymentForm" onsubmit="submitEditCustomerPayment(event)">
+                            <!-- Hidden field to store payable amount for validation -->
+                            <input type="hidden" id="cpEditPayableAmount" value="">
+
+                            <!-- Payment Summary Row -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="p-2 border rounded-3 text-center" style="background:#f8f9fa;">
+                                        <div style="font-size:0.72rem; text-transform:uppercase; color:#888;">Total Payable</div>
+                                        <div style="font-weight:700; font-size:1rem;" id="cpEditTotalDisplay">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-2 border rounded-3 text-center" style="background:#fff8e1;">
+                                        <div style="font-size:0.72rem; text-transform:uppercase; color:#888;">Balance After This Payment</div>
+                                        <div style="font-weight:700; font-size:1rem; color:#dc3545;" id="cpEditBalanceDisplay">-</div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="cpEditStatus" class="form-label">Payment Status: <span class="text-danger">*</span></label>
@@ -378,11 +505,18 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="cpEditAmount" class="form-label">Paid Amount (Rs.): <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" class="form-control" id="cpEditAmount" required>
+                                    <input type="number" step="0.01" min="0" class="form-control" id="cpEditAmount"
+                                           required oninput="validateCustomerEditPaidAmount()">
+                                    <div id="cpEditAmountWarning" class="text-warning mt-1" style="font-size:0.82rem; display:none;">
+                                        ⚠ Paid amount is less than total — status will be set to <strong>Partial</strong>.
+                                    </div>
+                                    <div id="cpEditAmountSuccess" class="text-success mt-1" style="font-size:0.82rem; display:none;">
+                                        ✓ Full amount covered — status will be set to <strong>Paid</strong>.
+                                    </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="cpEditReferenceNo" class="form-label">Reference No (Optional):</label>
-                                    <input type="text" class="form-control" id="cpEditReferenceNo" placeholder="enter your cheque No/ refereance no">
+                                    <input type="text" class="form-control" id="cpEditReferenceNo" placeholder="enter your cheque No/ reference no">
                                 </div>
                             </div>
                             <div class="mb-3">

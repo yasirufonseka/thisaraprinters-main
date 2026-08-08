@@ -67,6 +67,7 @@
                                     <th>Order ID</th>
                                     <th>Customer Name</th>
                                     <th>Description</th>
+                                    <th>Paper Type</th>
                                     <th>Deadline</th>
                                     <th>Priority</th>
                                     <th>Current Phase (Status)</th>
@@ -75,7 +76,7 @@
                             </thead>
                             <tbody id="productionTableBody">
                                 <tr>
-                                    <td colspan="7" class="text-center py-5">
+                                    <td colspan="8" class="text-center py-5">
                                         <div class="spinner-border text-primary" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
@@ -119,6 +120,16 @@
                         <div id="modalDescription" class="fs-6 text-dark" style="white-space: pre-wrap;">Description</div>
                     </div>
                     <hr class="my-2" style="opacity: 0.15;">
+                    <div class="mb-3">
+                        <span class="text-muted fw-semibold d-block text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Paper Type</span>
+                        <div id="modalPaperType" class="fs-6 text-dark fw-medium">N/A</div>
+                    </div>
+                    <hr class="my-2" style="opacity: 0.15;">
+                    <div class="mb-3">
+                        <span class="text-muted fw-semibold d-block text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Paper Variant</span>
+                        <div id="modalPaperVariant" class="fs-6 text-dark fw-medium">N/A</div>
+                    </div>
+                    <hr class="my-2" style="opacity: 0.15;">
                     <div class="row">
                         <div class="col-6 mb-3">
                             <span class="text-muted fw-semibold d-block text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Deadline</span>
@@ -133,6 +144,19 @@
                     <div class="mb-1">
                         <span class="text-muted fw-semibold d-block text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Current Production Phase</span>
                         <div id="modalStatus" class="fs-6 text-dark fw-medium mt-1">Status</div>
+                    </div>
+                    <hr class="my-2" style="opacity: 0.15;">
+                    <div class="mb-3">
+                        <label for="assignedEmployee" class="text-muted fw-semibold d-block text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Assigned Employee</label>
+                        <select id="assignedEmployee" class="form-select" onchange="assignEmployee()"><option value="">Select employee</option></select>
+                    </div>
+                    <div class="mb-1 d-flex align-items-center gap-3 p-3 rounded-3" style="background: #f0f7ff; border: 1px solid #cce0ff;">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#1B263B"><path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/></svg>
+                        <div>
+                            <span class="text-muted fw-semibold d-block text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Total Sheets Needed</span>
+                            <span id="modalTotalSheets" class="fw-bold text-dark" style="font-size: 1.4rem;">—</span>
+                            <span class="text-muted ms-1" style="font-size: 0.85rem;">sheets</span>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 p-3 bg-light" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">

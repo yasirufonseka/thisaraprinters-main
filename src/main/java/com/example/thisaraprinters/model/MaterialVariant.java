@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.ToString;
 
@@ -16,24 +17,27 @@ public class MaterialVariant {
     private Integer id;
 
     @ToString.Exclude
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "material_id")
     private Materials material;
 
+    @NotNull
     @Column(name = "gsm")
     private Integer gsm;
 
-    @Column(name = "width_mm")
+    @NotNull
+    @Column(name = "width_mm", columnDefinition = "DOUBLE")
     private Double width;
 
-    @Column(name = "height_mm")
+    @NotNull
+    @Column(name = "height_mm", columnDefinition = "DOUBLE")
     private Double height;
 
     @Column(name = "sheets_per_ream")
     private Integer sheetsPerReam;
 
-    @Column(name = "weight_per_unit")
+    @NotNull
+    @Column(name = "weight_per_unit", columnDefinition = "DOUBLE")
     private Double weightPerUnit;
 
     @Column(name = "unit")
@@ -44,6 +48,15 @@ public class MaterialVariant {
 
     @Column(name = "status")
     private String status;
+
+    @Column(name = "part_number")
+    private String partNumber;
+
+    // Kept explicitly because the save flow calls this setter at runtime.
+    // Lombok's @Data generates the remaining accessors.
+    public void setPartNumber(String partNumber) {
+        this.partNumber = partNumber;
+    }
 
     @Transient
     private Double sheetRate;

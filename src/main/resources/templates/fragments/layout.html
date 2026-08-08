@@ -45,7 +45,7 @@
                 </a>
             </li>
 
-            <li class="menu-item" sec:authorize="hasAuthority('Production_VIEW')">
+            <li class="menu-item" sec:authorize="hasAnyRole('Admin', 'Manager')">
                 <a th:href="@{/production/management}" class="menu-link"
                     th:classappend="${activePage == 'production' ? 'active' : ''}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
@@ -56,7 +56,7 @@
                 </a>
             </li>
 
-            <li class="menu-item" sec:authorize="hasAuthority('Production_VIEW')">
+            <li class="menu-item" sec:authorize="hasAnyRole('Admin', 'Designer', 'Operator')">
                 <a th:href="@{/production/staff}" class="menu-link"
                     th:classappend="${activePage == 'staff' ? 'active' : ''}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
@@ -77,7 +77,7 @@
                 </a>
             </li> -->
 
-            <li class="menu-item">
+            <li class="menu-item" sec:authorize="hasAuthority('Report_VIEW')">
                 <a th:href="@{/reports}" class="menu-link"
                     th:classappend="${activePage == 'reports' ? 'active' : ''}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
@@ -107,7 +107,7 @@
                 </a>
             </li>
 
-            <li class="menu-item">
+            <li class="menu-item" sec:authorize="hasAnyAuthority('Customer_VIEW','Supplier_VIEW')">
                 <a th:href="@{/payment/management}" class="menu-link" th:classappend="${activePage == 'payments' ? 'active' : ''}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
                         <path d="M560-440q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35ZM280-320q-33 0-56.5-23.5T200-400v-320q0-33 23.5-56.5T280-800h560q33 0 56.5 23.5T920-720v320q0 33-23.5 56.5T840-320H280Zm80-80h400q0-33 23.5-56.5T840-480v-160q-33 0-56.5-23.5T760-720H360q0 33-23.5 56.5T280-640v160q33 0 56.5 23.5T360-400Zm-240 240q-33 0-56.5-23.5T40-240v-440h80v440h680v80H120Zm160-240v-320 320Z"/>
@@ -187,7 +187,7 @@
             <div class="user-profile">
                 <div class="user-info text-end">
                     <span class="user-name" th:text="${#authentication.name}">John Doe</span>
-                    <span class="user-role">Administrator</span>
+                    <span class="user-role" th:text="${#authentication.authorities[0].authority}">Administrator</span>
                 </div>
                 <div class="user-avatar" th:text="${#strings.substring(#authentication.name, 0, 1).toUpperCase()}">J
                 </div>

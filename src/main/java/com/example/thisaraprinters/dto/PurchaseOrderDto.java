@@ -12,6 +12,8 @@ public class PurchaseOrderDto {
     private LocalDate orderDate;
     private String items;
     private String quantity;
+    private Double totalAmount;
+    private Double paidAmount;
     private String paymentStatus;
     private String notes;
 }

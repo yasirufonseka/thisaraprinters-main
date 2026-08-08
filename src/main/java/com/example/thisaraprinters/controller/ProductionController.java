@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.Map;
@@ -55,14 +56,24 @@ public class ProductionController {
 
     @PostMapping("/update-status")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> updateStatus(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<Map<String, String>> updateStatus(@RequestBody Map<String, String> payload, Authentication authentication) {
         String orderId = payload.get("orderId");
         String status = payload.get("status");
         if (orderId == null || status == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "orderId and status are required"));
         }
-        productionService.updateJobStatus(orderId, status);
+        productionService.updateJobStatus(orderId, status, authentication != null ? authentication.getName() : "system");
         return ResponseEntity.ok(Map.of("message", "Status updated successfully"));
+    }
+
+    @PostMapping("/assign")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> assignEmployee(@RequestBody Map<String, Object> payload, Authentication authentication) {
+        Object employeeId = payload.get("employeeId");
+        String orderId = (String) payload.get("orderId");
+        if (orderId == null || !(employeeId instanceof Number id)) return ResponseEntity.badRequest().body(Map.of("message", "orderId and employeeId are required"));
+        productionService.assignEmployee(orderId, id.longValue(), authentication != null ? authentication.getName() : "system");
+        return ResponseEntity.ok(Map.of("message", "Employee assigned successfully"));
     }
 
     @DeleteMapping("/delete/{id}")

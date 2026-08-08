@@ -48,5 +48,9 @@ public class StockLots {
     @Column(name = "status")
     private String status;
 
+    /** Quantity earmarked for production jobs but not yet consumed. */
+    @Column(name = "reserved_quantity")
+    private Integer reservedQuantity = 0;
+
 
 }

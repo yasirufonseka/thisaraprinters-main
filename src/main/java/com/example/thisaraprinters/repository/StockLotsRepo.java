@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface StockLotsRepo extends JpaRepository<StockLots, Integer> {
     List<StockLots> findByCreatedAtBetween(LocalDate start, LocalDate end);
+    List<StockLots> findByVariantIdOrderByCreatedAtAsc(Integer variantId);
 }

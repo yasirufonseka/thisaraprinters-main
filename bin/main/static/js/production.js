@@ -1,17 +1,30 @@
 let allProductionJobs = [];
+let selectedProductionJob = null;
+let productionEmployees = [];
+
+const formatPaperVariant = (quotation) => {
+    const variant = quotation && quotation.materialsList && quotation.materialsList.length
+        ? quotation.materialsList[0] : null;
+    if (!variant) return 'N/A';
+
+    const gsm = variant.gsm != null ? `${variant.gsm} GSM` : '';
+    const dimensions = variant.width != null && variant.height != null
+        ? `${variant.width} x ${variant.height} mm` : '';
+    return [gsm, dimensions].filter(Boolean).join(' - ') || 'N/A';
+};
 
 // Fetch and load all production records from the backend
 const loadProductionJobs = () => {
     getHTTPService('/production/all', 'GET', 'json').then((data) => {
         if (!Array.isArray(data)) {
-            document.getElementById('productionTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-5">Unable to load production records</td></tr>';
+            document.getElementById('productionTableBody').innerHTML = '<tr><td colspan="8" class="text-center py-5">Unable to load production records</td></tr>';
             return;
         }
         allProductionJobs = data;
         renderTable(allProductionJobs);
     }).catch((error) => {
         console.error("Error loading production jobs:", error);
-        document.getElementById('productionTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-5">Unable to load production records</td></tr>';
+        document.getElementById('productionTableBody').innerHTML = '<tr><td colspan="8" class="text-center py-5">Unable to load production records</td></tr>';
     });
 };
 
@@ -21,7 +34,7 @@ const renderTable = (jobs) => {
     if (!tableBody) return;
 
     if (!jobs || jobs.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7" class="text-center py-5">No production jobs found.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-5">No production jobs found.</td></tr>';
         return;
     }
 
@@ -86,6 +99,7 @@ const renderTable = (jobs) => {
             <td class="fw-bold">${job.orderId || ''}</td>
             <td>${job.customerName || 'N/A'}</td>
             <td>${job.description || ''}</td>
+            <td>${job.quotationid && job.quotationid.papertype ? job.quotationid.papertype : 'N/A'}<br><small class="text-muted">${formatPaperVariant(job.quotationid)}</small></td>
             ${deadlineCell}
             <td>${priorityBadge}</td>
             <td>${selectHtml}</td>
@@ -128,12 +142,20 @@ const updateStatus = (orderId, newStatus) => {
 const showDetails = (id) => {
     const job = allProductionJobs.find(j => j.id === id);
     if (!job) return;
+    selectedProductionJob = job;
 
     document.getElementById('modalOrderId').textContent = job.orderId || '';
     document.getElementById('modalCustomerName').textContent = job.customerName || 'N/A';
     document.getElementById('modalDescription').textContent = job.description || 'No additional specifications provided.';
+    document.getElementById('modalPaperType').textContent =
+        job.quotationid && job.quotationid.papertype ? job.quotationid.papertype : 'N/A';
+    document.getElementById('modalPaperVariant').textContent = formatPaperVariant(job.quotationid);
     document.getElementById('modalDeadline').textContent = job.deadline || 'N/A';
-    
+
+    // Total sheets needed
+    document.getElementById('modalTotalSheets').textContent =
+        (job.totalSheetsNeeded != null && job.totalSheetsNeeded > 0) ? job.totalSheetsNeeded : '—';
+
     // Priority markup inside modal
     let priorityMarkup = '';
     if (job.priority === 'Urgent') {
@@ -145,10 +167,22 @@ const showDetails = (id) => {
     }
     document.getElementById('modalPriority').innerHTML = priorityMarkup;
     document.getElementById('modalStatus').textContent = job.status || '';
+    const employeeSelect = document.getElementById('assignedEmployee');
+    employeeSelect.innerHTML = '<option value="">Select employee</option>' + productionEmployees.map(employee =>
+        `<option value="${employee.id}">${employee.callingname || employee.fullname}</option>`).join('');
+    if (job.assignedEmployee) employeeSelect.value = job.assignedEmployee.id;
 
     // Trigger show modal
     const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('detailsModal'));
     modal.show();
+};
+
+const assignEmployee = () => {
+    const employeeId = Number(document.getElementById('assignedEmployee').value);
+    if (!selectedProductionJob || !employeeId) return;
+    postHTTPService('/production/assign', 'POST', 'json', { orderId: selectedProductionJob.orderId, employeeId })
+        .then(response => { swal.fire({ icon: 'success', title: 'Assigned', text: response.message, timer: 1200, showConfirmButton: false }); loadProductionJobs(); })
+        .catch(error => swal.fire({ icon: 'error', title: 'Assignment failed', text: error.responseJSON?.message || 'Unable to assign employee.' }));
 };
 
 // Client-side search and status phase filter
@@ -204,4 +238,5 @@ const dispatchJob = (orderId) => {
 // DOM listener to trigger loading jobs
 window.addEventListener('DOMContentLoaded', () => {
     loadProductionJobs();
+    getHTTPService('/employees/get/alldata', 'GET', 'json').then(data => { productionEmployees = Array.isArray(data) ? data : []; });
 });

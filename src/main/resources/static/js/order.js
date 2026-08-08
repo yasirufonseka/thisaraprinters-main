@@ -414,7 +414,7 @@ function calculatePaperCost(totalSheets, paperRatePerSheet) {
 
 // Calculate all quotation totals using the same formulas as the Spring Boot backend.
 function calculateQuotationTotals(quantity, wastageSheets, productsPerSheet, paperRatePerSheet, impressionCost) {
-  const printedSheets = productsPerSheet > 0 && quantity > 0 && wastageSheets > 0
+  const printedSheets = productsPerSheet > 0 && quantity > 0
     ? Math.ceil((quantity + wastageSheets)/ productsPerSheet)
     : 0;
   const totalSheets = printedSheets ;
@@ -633,6 +633,8 @@ function calculateQuotation() {
   updateQuotationUI(totals);
 }
 
+let editingQuotation = null;
+
 // Handle form submission and payload generation
 function submitQuotation(event) {
   event.preventDefault();
@@ -758,6 +760,7 @@ function submitQuotation(event) {
 
 
   const requestData = {
+    id: editingQuotation ? editingQuotation.id : 0,
     productsize: finalSize,
     quantity: quantity,
     color: color,
@@ -767,8 +770,8 @@ function submitQuotation(event) {
     lamination: lamination,
     bindingtype: bindingtype,
     quotationamount: quotationamount,
-    advanceamount: 0,
-    quotationstatus: "Pending",
+    advanceamount: editingQuotation ? (editingQuotation.advanceamount || 0) : 0,
+    quotationstatus: editingQuotation ? editingQuotation.quotationstatus : "Pending",
     expiryDate: expiryDate || null,
     customer: { id: customerObj.id },
     materialsList: [{ id: parseInt(materialId) }],
@@ -795,7 +798,7 @@ function submitQuotation(event) {
     swal.fire({
       icon: 'success',
       title: 'Success!',
-      text: 'Quotation generated and saved successfully.',
+      text: editingQuotation ? 'Quotation updated successfully.' : 'Quotation generated and saved successfully.',
       timer: 2000,
       showConfirmButton: false
     });
@@ -810,6 +813,8 @@ function submitQuotation(event) {
     if (customerNameInput) {
       delete customerNameInput.dataset.customer;
     }
+    editingQuotation = null;
+    setQuotationEditorLabels();
 
     const costWraps = ['bindingCostWrap', 'cuttingCostWrap', 'foilingCostWrap', 'laminationThermalCostWrap', 'laminationNormalCostWrap'];
     costWraps.forEach(id => {
@@ -840,6 +845,112 @@ function searchQuotations() {
   });
 }
 
+function setQuotationEditorLabels() {
+  const title = document.getElementById('quotationModalTitle');
+  const submitButton = document.getElementById('quotationSubmitButton');
+  const isEditing = Boolean(editingQuotation);
+  if (title) title.textContent = isEditing ? `Edit Quotation Q-${editingQuotation.id}` : 'Generate Quotation';
+  if (submitButton) submitButton.textContent = isEditing ? 'Update Quotation' : 'Generate Quotation';
+}
+
+function setChecked(id, checked) {
+  const element = document.getElementById(id);
+  if (element) element.checked = checked;
+}
+
+function editQuotation(q) {
+  if (!q || !q.id) return;
+
+  editingQuotation = q;
+  const form = document.getElementById('quotationForm');
+  if (form) form.reset();
+
+  const customerInput = document.getElementById('customerName');
+  if (customerInput && q.customer) {
+    customerInput.value = q.customer.name || '';
+    customerInput.dataset.customer = JSON.stringify(q.customer);
+  }
+
+  document.getElementById('description').value = q.quotationdescription || '';
+  document.getElementById('quantity').value = q.quantity || '';
+  document.getElementById('wastageSheets').value = q.wastageSheets || 0;
+  document.getElementById('edgeMarginMm').value = q.edgeMarginMm != null ? q.edgeMarginMm : 10;
+  document.getElementById('paperRatePerSheet').value = q.paperRatePerSheet || 0;
+
+  const impressionRate = q.quantity > 0 ? (q.impressionCost || 0) / Math.max(q.quantity, 1000) : 0;
+  document.getElementById('impressionCost').value = impressionRate.toFixed(2);
+
+  const productSize = String(q.productsize || '');
+  const sizeSelect = document.getElementById('productSize');
+  const customSizeMatch = productSize.match(/CUSTOM\s*\(\s*([\d.]+)\s*[Xx]\s*([\d.]+)/i);
+  if (customSizeMatch) {
+    sizeSelect.value = 'custom';
+    document.getElementById('customSizeHeight').value = customSizeMatch[1];
+    document.getElementById('customSizeWidth').value = customSizeMatch[2];
+  } else {
+    const matchingOption = Array.from(sizeSelect.options)
+      .find(option => option.value.toUpperCase() === productSize.toUpperCase());
+    sizeSelect.value = matchingOption ? matchingOption.value : '';
+  }
+  toggleCustomSize();
+
+  const colorSelect = document.getElementById('colorType');
+  const matchingColor = Array.from(colorSelect.options)
+    .find(option => option.text.trim().toUpperCase() === String(q.color || '').trim().toUpperCase());
+  if (matchingColor) colorSelect.value = matchingColor.value;
+
+  const materialId = q.materialsList && q.materialsList.length ? q.materialsList[0].id : null;
+  if (materialId) document.getElementById('materials').value = String(materialId);
+
+  const binding = String(q.bindingtype || '').toUpperCase();
+  const cutting = String(q.cuttingtype || '').toUpperCase();
+  const foiling = String(q.foiling || '').toUpperCase();
+  const lamination = String(q.lamination || '').toUpperCase();
+  setChecked('bindingPerfect', binding === 'PERFECT');
+  setChecked('bindingSpiral', binding === 'SPIRAL');
+  setChecked('cuttingDie', cutting.includes('DIE CUTTING'));
+  setChecked('cuttingGill', cutting.includes('GILLNETTING'));
+  setChecked('foilingUv', foiling.includes('UV SPOT'));
+  setChecked('foilingNormal', foiling.includes('NORMAL FOILING'));
+  setChecked('laminationThermalGloss', lamination === 'THERMAL GLOSS');
+  setChecked('laminationThermalMat', lamination === 'THERMAL MAT');
+  setChecked('laminationNormalGloss', lamination === 'NORMAL GLOSS');
+  setChecked('laminationNormalMat', lamination === 'NORMAL MAT');
+
+  const totalSheets = q.paperRatePerSheet > 0 ? Math.max(1, Math.round((q.paperCost || 0) / q.paperRatePerSheet)) : 1;
+  const finishingRate = (q.finishingCost || 0) / totalSheets;
+  const finishingInput = binding === 'PERFECT' || binding === 'SPIRAL' ? 'bindingCostPerSheet'
+    : cutting !== 'NONE' && cutting ? 'cuttingCostPerSheet'
+    : foiling !== 'NONE' && foiling ? 'foilingCostPerSheet'
+    : lamination.startsWith('THERMAL') ? 'laminationThermalCostPerSheet'
+    : lamination.startsWith('NORMAL') ? 'laminationNormalCostPerSheet' : null;
+  if (finishingInput) document.getElementById(finishingInput).value = finishingRate.toFixed(2);
+  toggleCostInput('bindingCostWrap');
+  toggleCostInputByCheckboxGroup('cuttingCostWrap', ['cuttingDie', 'cuttingGill']);
+  toggleCostInputByCheckboxGroup('foilingCostWrap', ['foilingUv', 'foilingNormal']);
+  toggleLaminationCost();
+
+  setQuotationEditorLabels();
+  calculateQuotation();
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('generateQuatationModal')).show();
+}
+
+function resetQuotationEditor() {
+  editingQuotation = null;
+  setQuotationEditorLabels();
+}
+
+function formatPaperVariant(quotation) {
+  const variant = quotation && quotation.materialsList && quotation.materialsList.length
+    ? quotation.materialsList[0] : null;
+  if (!variant) return 'N/A';
+
+  const gsm = variant.gsm != null ? `${variant.gsm} GSM` : '';
+  const dimensions = variant.width != null && variant.height != null
+    ? `${variant.width} x ${variant.height} mm` : '';
+  return [gsm, dimensions].filter(Boolean).join(' - ') || 'N/A';
+}
+
 function loadQuotations() {
   getHTTPService('/order/quotations', 'GET', 'json')
     .then((data) => {
@@ -866,6 +977,7 @@ function loadQuotations() {
           statusBadge = '<span class="badge bg-success">Approved / In Production</span>';
           actionButtons = `
             <button class="btn btn-info px-3 py-2" onclick="printQuotation(JSON.parse(this.dataset.q))" data-q="${qJson}" title="Print Quotation"><i class="bi bi-printer"></i> Print</button>
+            <button class="btn btn-primary px-3 py-2 ms-2" onclick="editQuotation(JSON.parse(this.dataset.q))" data-q="${qJson}" title="Edit Quotation"><i class="bi bi-pencil-square"></i> Edit</button>
             <button class="btn btn-secondary px-3 py-2 ms-2 fw-bold" disabled title="Already in Production">Sent to Production</button>
             <button class="btn btn-danger px-3 py-2 ms-2" onclick="deleteQuotation(${q.id})">Delete</button>
           `;
@@ -873,13 +985,14 @@ function loadQuotations() {
           statusBadge = `<span class="badge bg-warning text-dark">${q.quotationstatus || 'PENDING'}</span>`;
           actionButtons = `
             <button class="btn btn-info px-3 py-2" onclick="printQuotation(JSON.parse(this.dataset.q))" data-q="${qJson}" title="Print Quotation"><i class="bi bi-printer"></i> Print</button>
+            <button class="btn btn-primary px-3 py-2 ms-2" onclick="editQuotation(JSON.parse(this.dataset.q))" data-q="${qJson}" title="Edit Quotation"><i class="bi bi-pencil-square"></i> Edit</button>
             <button class="btn btn-warning px-3 py-2 ms-2 text-dark fw-bold" onclick="sendToProduction(${q.id})" title="Send to Production">Send to Production</button>
             <button class="btn btn-danger px-3 py-2 ms-2" onclick="deleteQuotation(${q.id})">Delete</button>
           `;
         }
 
         return `
-          <tr>
+          <tr style="cursor: pointer;" title="Click to view quotation details" onclick="if (!event.target.closest('button')) showQuotationDetailsPopup(JSON.parse(this.dataset.q))" data-q="${qJson}">
             <td>Q-${q.id}</td>
             <td>${customerName}</td>
             <td>${qDate}</td>
@@ -914,6 +1027,7 @@ function printQuotation(q) {
 
   const fmt = (v) => (typeof v === 'number' ? v.toFixed(2) : (v || 'N/A'));
   const fmtInt = (v) => (typeof v === 'number' ? Math.round(v) : (v || 'N/A'));
+  const paperVariant = formatPaperVariant(q);
 
   const finishing = [
     q.bindingtype && q.bindingtype !== 'NONE' ? 'Binding: ' + q.bindingtype : '',
@@ -989,6 +1103,8 @@ function printQuotation(q) {
     <div class="box">
       <h4>Product Specifications</h4>
       <div class="row-item"><span class="label">Product Size</span><span class="value">${q.productsize || 'N/A'}</span></div>
+      <div class="row-item"><span class="label">Paper Type</span><span class="value">${q.papertype || 'N/A'}</span></div>
+      <div class="row-item"><span class="label">Paper Variant</span><span class="value">${paperVariant}</span></div>
       <div class="row-item"><span class="label">Colour</span><span class="value">${q.color || 'N/A'}</span></div>
       <div class="row-item"><span class="label">Quantity</span><span class="value">${fmtInt(q.quantity)} pcs</span></div>
       <div class="row-item"><span class="label">Finishing</span><span class="value">${finishing}</span></div>
@@ -1256,5 +1372,137 @@ function viewOrderDetails(job) {
     `,
     icon: 'info',
     confirmButtonText: 'Close'
+  });
+}
+
+// Show full quotation details in a SweetAlert when clicking on a quotation table row
+function showQuotationDetailsPopup(q) {
+  if (!q) return;
+
+  const customerName = q.customer ? q.customer.name : 'Walk-in Customer';
+  const qDate = q.quotationdate || 'N/A';
+  const expDate = q.expiryDate || 'N/A';
+  
+  const fmt = (val, prefix = '', suffix = '') =>
+      (val != null && val !== '') ? `${prefix}${val}${suffix}` : 'N/A';
+  const paperVariant = formatPaperVariant(q);
+
+  const fmtCurrency = (val) =>
+      (val != null && val > 0) ? `Rs. ${Number(val).toLocaleString('en-LK', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : 'N/A';
+
+  const statusColor = {
+      'APPROVED': '#198754', 'PENDING': '#ffc107', 'REJECTED': '#dc3545', 'IN PRODUCTION': '#198754'
+  };
+  const statusBg = statusColor[q.quotationstatus] || '#6c757d';
+
+  let totalSheets = 0;
+  if (q.paperRatePerSheet > 0) {
+    totalSheets = Math.round(q.paperCost / q.paperRatePerSheet);
+  }
+
+  swal.fire({
+      title: `<strong style="color:#1B263B;">📋 Quotation Details — Q-${q.id}</strong>`,
+      width: 600,
+      html: `
+          <div class="text-start" style="font-size:0.92rem; line-height:1.7;">
+
+              <!-- Job Info -->
+              <div style="background:#f8f9fa; border-radius:10px; padding:12px 16px; margin-bottom:12px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                      <div>
+                          <span style="font-size:0.7rem; color:#6c757d; text-transform:uppercase; letter-spacing:.5px; font-weight:600;">Customer</span><br>
+                          <strong>${customerName}</strong>
+                      </div>
+                      <span style="background:${statusBg}; color:#fff; padding:3px 12px; border-radius:20px; font-size:0.78rem; font-weight:600;">
+                          ${q.quotationstatus || 'N/A'}
+                      </span>
+                  </div>
+                  <div style="margin-top:8px; color:#444;">${q.quotationdescription || 'No description'}</div>
+              </div>
+
+              <!-- Product Specs -->
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px;">
+                  <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:10px;">
+                      <span style="font-size:0.7rem; color:#6c757d; text-transform:uppercase; font-weight:600;">Product Size</span><br>
+                      <strong>${fmt(q.productsize)}</strong>
+                  </div>
+                  <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:10px;">
+                      <span style="font-size:0.7rem; color:#6c757d; text-transform:uppercase; font-weight:600;">Paper Type</span><br>
+                      <strong>${fmt(q.papertype)}</strong>
+                  </div>
+                  <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:10px;">
+                      <span style="font-size:0.7rem; color:#6c757d; text-transform:uppercase; font-weight:600;">Paper Variant</span><br>
+                      <strong>${paperVariant}</strong>
+                  </div>
+                  <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:10px;">
+                      <span style="font-size:0.7rem; color:#6c757d; text-transform:uppercase; font-weight:600;">Quantity</span><br>
+                      <strong>${fmt(q.quantity, '', ' pcs')}</strong>
+                  </div>
+                  <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:10px;">
+                      <span style="font-size:0.7rem; color:#6c757d; text-transform:uppercase; font-weight:600;">Color</span><br>
+                      <strong>${fmt(q.color)}</strong>
+                  </div>
+                  <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:10px;">
+                      <span style="font-size:0.7rem; color:#6c757d; text-transform:uppercase; font-weight:600;">Cutting Type</span><br>
+                      <strong>${fmt(q.cuttingtype)}</strong>
+                  </div>
+                  <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:10px;">
+                      <span style="font-size:0.7rem; color:#6c757d; text-transform:uppercase; font-weight:600;">Lamination</span><br>
+                      <strong>${fmt(q.lamination)}</strong>
+                  </div>
+                  <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:10px;">
+                      <span style="font-size:0.7rem; color:#6c757d; text-transform:uppercase; font-weight:600;">Binding</span><br>
+                      <strong>${fmt(q.bindingtype)}</strong>
+                  </div>
+              </div>
+
+              <!-- Sheets Banner -->
+              <div style="background:#f0f7ff; border:1px solid #cce0ff; border-radius:10px; padding:12px 16px; margin-bottom:12px; display:flex; align-items:center; gap:14px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 -960 960 960" width="32px" fill="#1B263B"><path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/></svg>
+                  <div>
+                      <span style="font-size:0.72rem; color:#6c757d; text-transform:uppercase; letter-spacing:.5px; font-weight:600;">Total Sheets Needed</span><br>
+                      <span style="font-size:1.8rem; font-weight:800; color:#1B263B; line-height:1.1;">
+                          ${(totalSheets > 0) ? totalSheets : '—'}
+                      </span>
+                      <span style="color:#6c757d; margin-left:4px; font-size:0.9rem;">sheets</span>
+                      &nbsp;&nbsp;
+                      <span style="font-size:0.8rem; color:#555;">(Wastage: ${fmt(q.wastageSheets, '', ' sheets')})</span>
+                  </div>
+              </div>
+
+              <!-- Cost Breakdown -->
+              <div style="background:#fff; border:1px solid #e0e0e0; border-radius:10px; overflow:hidden; margin-bottom:8px;">
+                  <div style="background:#1B263B; color:#fff; padding:8px 14px; font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:.5px;">Cost Breakdown</div>
+                  <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
+                      <tr style="border-bottom:1px solid #f0f0f0;">
+                          <td style="padding:7px 14px; color:#555;">Paper Cost</td>
+                          <td style="padding:7px 14px; text-align:right; font-weight:600;">${fmtCurrency(q.paperCost)}</td>
+                      </tr>
+                      <tr style="border-bottom:1px solid #f0f0f0;">
+                          <td style="padding:7px 14px; color:#555;">Finishing Cost</td>
+                          <td style="padding:7px 14px; text-align:right; font-weight:600;">${fmtCurrency(q.finishingCost)}</td>
+                      </tr>
+                      <tr style="border-bottom:1px solid #f0f0f0;">
+                          <td style="padding:7px 14px; color:#555;">Impression Cost</td>
+                          <td style="padding:7px 14px; text-align:right; font-weight:600;">${fmtCurrency(q.impressionCost)}</td>
+                      </tr>
+                      <tr style="border-bottom:1px solid #f0f0f0;">
+                          <td style="padding:7px 14px; color:#555;">Service Charge (${q.serviceChargePercentage || 0}%)</td>
+                          <td style="padding:7px 14px; text-align:right; font-weight:600;">${fmtCurrency(q.serviceChargeAmount)}</td>
+                      </tr>
+                      <tr style="background:#f8f9fa;">
+                          <td style="padding:9px 14px; font-weight:700; color:#1B263B;">Total Amount</td>
+                          <td style="padding:9px 14px; text-align:right; font-weight:800; font-size:1rem; color:#1B263B;">${fmtCurrency(q.quotationamount)}</td>
+                      </tr>
+                  </table>
+              </div>
+
+              <div style="font-size:0.78rem; color:#888; text-align:right;">Quotation Date: ${fmt(qDate)} &nbsp;|&nbsp; Expiry Date: ${fmt(expDate)}</div>
+          </div>
+      `,
+      showConfirmButton: true,
+      confirmButtonColor: '#1B263B',
+      confirmButtonText: 'Close',
+      showClass: { popup: 'animate__animated animate__fadeInDown animate__faster' }
   });
 }

@@ -28,17 +28,21 @@ function renderSupplierTable(orders) {
     tbody.innerHTML = orders.map(o => {
         const statusClass = getStatusBadgeClass(o.paymentStatus);
         const supplierName = o.supplier ? o.supplier.companyname : '-';
-        const amount = o.paidAmount != null ? 'Rs. ' + Number(o.paidAmount).toLocaleString('en-LK', {minimumFractionDigits: 2}) : '-';
+        const orderDate = o.orderDate || o.createdDate || '-';
+        const amount = o.paidAmount != null
+            ? 'Rs. ' + Number(o.paidAmount).toLocaleString('en-LK', { minimumFractionDigits: 2 })
+            : '-';
         return `
         <tr>
             <td><strong>PO-${o.id}</strong></td>
             <td>${supplierName}</td>
-            <td>${o.orderDate || '-'}</td>
+            <td>${orderDate}</td>
             <td>${o.items || '-'}</td>
-            <td>${o.quantity || '-'}</td>
+            <td>${amount}</td>
             <td><span class="badge ${statusClass}">${o.paymentStatus || 'Unpaid'}</span></td>
             <td>
-                <button class="btn btn-teal btn-sm me-1" onclick="openSupplierPaymentModal(${JSON.stringify(o).replace(/"/g, '&quot;')})">
+                
+                <button class="btn btn-teal btn-sm" onclick="openSupplierPaymentModal(${JSON.stringify(o).replace(/"/g, '&quot;')})">
                     Edit Payment
                 </button>
             </td>
@@ -48,11 +52,11 @@ function renderSupplierTable(orders) {
 
 
 function updateSupplierSummary(orders) {
-    const total  = orders.length;
-    const paid   = orders.filter(o => o.paymentStatus === 'Paid').length;
+    const total = orders.length;
+    const paid = orders.filter(o => o.paymentStatus === 'Paid').length;
     const pending = total - paid;
-    document.getElementById('spTotal').textContent  = total;
-    document.getElementById('spPaid').textContent   = paid;
+    document.getElementById('spTotal').textContent = total;
+    document.getElementById('spPaid').textContent = paid;
     document.getElementById('spPending').textContent = pending;
 }
 
@@ -70,11 +74,185 @@ document.getElementById('searchSupplierOrder').addEventListener('input', functio
 //  Supplier payment modal
 let currentOrderId = null;
 
+function populateSupplierPoSelect(selectedOrderId = null) {
+    const select = document.getElementById('spAddPoSelect');
+    if (!select) return;
+
+    select.innerHTML = '<option value="" disabled selected>Select Purchase Order</option>';
+    allSupplierOrders.forEach(o => {
+        const supplierName = o.supplier ? o.supplier.companyname : 'Supplier N/A';
+        const amount = o.totalAmount != null ? o.totalAmount : (o.priceRequest?.totalAmount || 0);
+        const amountFormatted = amount ? 'Rs. ' + Number(amount).toLocaleString('en-LK', { minimumFractionDigits: 2 }) : '-';
+        const opt = document.createElement('option');
+        opt.value = o.id;
+        opt.textContent = `PO-${o.id} - ${supplierName} (${amountFormatted}) [${o.paymentStatus || 'Unpaid'}]`;
+        opt.dataset.totalAmount = amount;
+        opt.dataset.paymentMethod = o.paymentMethod || '';
+        opt.dataset.paymentStatus = o.paymentStatus || 'Unpaid';
+        if (selectedOrderId && o.id == selectedOrderId) {
+            opt.selected = true;
+        }
+        select.appendChild(opt);
+    });
+}
+
+function onSupplierPoSelected(select) {
+    const opt = select.options[select.selectedIndex];
+    if (!opt || !opt.value) return;
+
+    const poId = opt.value;
+    currentOrderId = poId;
+    document.getElementById('spAddPoId').value = poId;
+
+    const totalAmount = parseFloat(opt.dataset.totalAmount) || null;
+    const spTotalEl = document.getElementById('spAddTotalAmount');
+    const spTotalDisplay = document.getElementById('spAddTotalAmountDisplay');
+
+    if (totalAmount != null && !isNaN(totalAmount) && totalAmount > 0) {
+        spTotalEl.value = totalAmount;
+        spTotalDisplay.textContent = 'Rs. ' + Number(totalAmount).toLocaleString('en-LK', { minimumFractionDigits: 2 });
+    } else {
+        spTotalEl.value = '';
+        spTotalDisplay.textContent = 'Not specified';
+    }
+
+    validateSupplierAddPaidAmount();
+}
+
+function openAddSupplierPaymentModal(order = null) {
+    populateSupplierPoSelect(order ? order.id : null);
+
+    if (order) {
+        currentOrderId = order.id;
+        document.getElementById('spAddPoId').value = order.id;
+        document.getElementById('spAddStatus').value = 'Partial';
+        document.getElementById('spAddMethod').value = order.paymentMethod || '';
+
+        const totalAmount = order.totalAmount != null ? order.totalAmount : (order.priceRequest?.totalAmount || null);
+        const spTotalEl = document.getElementById('spAddTotalAmount');
+        const spTotalDisplay = document.getElementById('spAddTotalAmountDisplay');
+        if (totalAmount != null && !isNaN(totalAmount)) {
+            spTotalEl.value = totalAmount;
+            spTotalDisplay.textContent = 'Rs. ' + Number(totalAmount).toLocaleString('en-LK', { minimumFractionDigits: 2 });
+        } else {
+            spTotalEl.value = '';
+            spTotalDisplay.textContent = 'Not specified';
+        }
+    } else {
+        currentOrderId = null;
+        document.getElementById('spAddPoId').value = '';
+        document.getElementById('spAddStatus').value = 'Partial';
+        document.getElementById('spAddMethod').value = '';
+        document.getElementById('spAddTotalAmount').value = '';
+        document.getElementById('spAddTotalAmountDisplay').textContent = '-';
+
+        // Auto-select the first order if available
+        const select = document.getElementById('spAddPoSelect');
+        if (allSupplierOrders.length > 0) {
+            select.selectedIndex = 1; // select first PO option after placeholder
+            onSupplierPoSelected(select);
+        }
+    }
+
+    document.getElementById('spAddAmount').value = '';
+    document.getElementById('spAddReferenceNo').value = '';
+    document.getElementById('spAddNotes').value = '';
+    document.getElementById('spAddProof').value = '';
+
+    document.getElementById('spAddAmountWarning').style.display = 'none';
+    document.getElementById('spAddAmountSuccess').style.display = 'none';
+
+    const modal = new bootstrap.Modal(document.getElementById('addSupplierPaymentModal'));
+    modal.show();
+}
+
+function validateSupplierAddPaidAmount() {
+    const paidAmount = parseFloat(document.getElementById('spAddAmount').value);
+    const totalAmount = parseFloat(document.getElementById('spAddTotalAmount').value);
+    const warning = document.getElementById('spAddAmountWarning');
+    const success = document.getElementById('spAddAmountSuccess');
+    const statusSelect = document.getElementById('spAddStatus');
+
+    if (isNaN(paidAmount) || isNaN(totalAmount) || totalAmount <= 0) {
+        warning.style.display = 'none';
+        success.style.display = 'none';
+        return;
+    }
+
+    if (paidAmount < totalAmount) {
+        warning.style.display = 'block';
+        success.style.display = 'none';
+        if (statusSelect.value === 'Paid') statusSelect.value = 'Partial';
+    } else {
+        warning.style.display = 'none';
+        success.style.display = 'block';
+        if (statusSelect.value === 'Partial') statusSelect.value = 'Paid';
+    }
+}
+
+function submitAddSupplierPayment(e) {
+    e.preventDefault();
+    if (!currentOrderId) {
+        showError('Please select a valid Purchase Order.');
+        return;
+    }
+    const form = document.getElementById('addSupplierPaymentForm');
+    const formData = new FormData(form);
+
+    const paidAmount = parseFloat(document.getElementById('spAddAmount').value) || 0;
+    const totalAmount = parseFloat(document.getElementById('spAddTotalAmount').value) || 0;
+    const statusSelect = document.getElementById('spAddStatus');
+
+    if ((statusSelect.value === 'Paid' || statusSelect.value === 'Partial') && totalAmount > 0) {
+        statusSelect.value = paidAmount < totalAmount ? 'Partial' : 'Paid';
+    }
+
+    showLoading('Recording supplier payment...');
+
+    postFormHTTPService(`/payment/supplier/${currentOrderId}/payment`, formData)
+        .then(res => {
+            Swal.fire({ icon: 'success', title: 'Recorded!', text: res.message || 'Supplier payment recorded successfully', timer: 2200, showConfirmButton: false });
+            bootstrap.Modal.getInstance(document.getElementById('addSupplierPaymentModal')).hide();
+            form.reset();
+            loadSupplierOrders();
+        })
+        .catch(xhr => {
+            const msg = xhr.responseJSON?.message || 'Failed to record supplier payment.';
+            showError(msg);
+        });
+}
+
 function openSupplierPaymentModal(order) {
     currentOrderId = order.id;
     document.getElementById('spEditPoId').value = order.id;
     document.getElementById('spEditStatus').value = order.paymentStatus || 'Unpaid';
-    document.getElementById('spEditNotes').value  = order.paymentNotes || '';
+    document.getElementById('spEditNotes').value = order.paymentNotes || '';
+
+    // Populate paid amount if already set
+    if (order.paidAmount) {
+        document.getElementById('spEditAmount').value = order.paidAmount;
+    } else {
+        document.getElementById('spEditAmount').value = '';
+    }
+    if (order.paymentMethod) {
+        document.getElementById('spEditMethod').value = order.paymentMethod;
+    }
+
+    // Show total amount from price request reply if available
+    const totalAmount = order.priceRequest?.totalAmount || null;
+    const spTotalEl = document.getElementById('spTotalAmount');
+    const spTotalDisplay = document.getElementById('spTotalAmountDisplay');
+    if (totalAmount != null && !isNaN(totalAmount)) {
+        spTotalEl.value = totalAmount;
+        spTotalDisplay.textContent = 'Rs. ' + Number(totalAmount).toLocaleString('en-LK', { minimumFractionDigits: 2 });
+    } else {
+        spTotalEl.value = '';
+        spTotalDisplay.textContent = 'Not specified';
+    }
+
+    // Reset warning/success messages
+    document.getElementById('spAmountWarning').style.display = 'none';
+    document.getElementById('spAmountSuccess').style.display = 'none';
 
     handleSupplierStatusChange(order.paymentStatus);
 
@@ -85,7 +263,8 @@ function openSupplierPaymentModal(order) {
 function handleSupplierStatusChange(status) {
     const section = document.getElementById('spPaymentDetailsSection');
     const proofSection = document.getElementById('spProofSection');
-    if (status === 'Paid') {
+    // Show payment details for both Paid and Partial
+    if (status === 'Paid' || status === 'Partial') {
         section.style.display = 'block';
         proofSection.style.display = 'block';
     } else {
@@ -94,30 +273,67 @@ function handleSupplierStatusChange(status) {
     }
 }
 
+function validateSupplierPaidAmount() {
+    const paidAmount = parseFloat(document.getElementById('spEditAmount').value);
+    const totalAmount = parseFloat(document.getElementById('spTotalAmount').value);
+    const warning = document.getElementById('spAmountWarning');
+    const success = document.getElementById('spAmountSuccess');
+    const statusSelect = document.getElementById('spEditStatus');
+
+    if (isNaN(paidAmount) || isNaN(totalAmount) || totalAmount <= 0) {
+        warning.style.display = 'none';
+        success.style.display = 'none';
+        return;
+    }
+
+    if (paidAmount < totalAmount) {
+        warning.style.display = 'block';
+        success.style.display = 'none';
+        // Auto-set status to Partial
+        if (statusSelect.value === 'Paid') statusSelect.value = 'Partial';
+    } else {
+        warning.style.display = 'none';
+        success.style.display = 'block';
+        // Auto-set status to Paid if full amount
+        if (statusSelect.value === 'Partial') statusSelect.value = 'Paid';
+    }
+}
+
 function submitSupplierPaymentUpdate(e) {
     e.preventDefault();
     const form = document.getElementById('editSupplierPaymentForm');
+
+    // Auto-resolve status based on paid vs total amount
+    const paidAmount = parseFloat(document.getElementById('spEditAmount').value) || 0;
+    const totalAmount = parseFloat(document.getElementById('spTotalAmount').value) || 0;
+    const statusSelect = document.getElementById('spEditStatus');
+
+    if ((statusSelect.value === 'Paid' || statusSelect.value === 'Partial') && totalAmount > 0) {
+        if (paidAmount < totalAmount) {
+            statusSelect.value = 'Partial';
+        } else {
+            statusSelect.value = 'Paid';
+        }
+    }
+
     const formData = new FormData(form);
 
     showLoading('Updating supplier payment...');
 
-    $.ajax({
-        url: `/payment/supplier/${currentOrderId}/payment`,
-        type: 'POST',
-        data: formData,
-        contentType: false,
-        processData: false
-    })
-    .done(res => {
-        Swal.fire({ icon: 'success', title: 'Updated!', text: res.message || 'Payment updated', timer: 2000, showConfirmButton: false });
-        bootstrap.Modal.getInstance(document.getElementById('editSupplierPaymentModal')).hide();
-        loadSupplierOrders();
-    })
-    .fail(() => showError('Failed to update payment.'));
+    postFormHTTPService(`/payment/supplier/${currentOrderId}/payment`, formData)
+        .then(res => {
+            Swal.fire({ icon: 'success', title: 'Updated!', text: res.message || 'Payment updated', timer: 2000, showConfirmButton: false });
+            bootstrap.Modal.getInstance(document.getElementById('editSupplierPaymentModal')).hide();
+            loadSupplierOrders();
+        })
+        .catch(xhr => {
+            const msg = xhr.responseJSON?.message || 'Failed to update payment.';
+            showError(msg);
+        });
 }
 
 
-//  CUSTOMER PAYMENTS
+//-----------------------------------------  CUSTOMER PAYMENTS ------------------------------------------------------------------------------------
 
 
 let allCustomerPayments = [];
@@ -144,9 +360,9 @@ function renderCustomerTable(payments) {
         const quotation = p.quotation || p.production?.quotationid;
         const statusClass = getStatusBadgeClass(p.paymentStatus);
         const customerName = p.customer ? p.customer.name : (quotation?.customer?.name || '-');
-        const quotationId  = quotation ? quotation.id : '-';
-        const total = quotation ? 'Rs. ' + Number(quotation.quotationamount).toLocaleString('en-LK', {minimumFractionDigits: 2}) : '-';
-        const paid  = p.paidAmount != null ? 'Rs. ' + Number(p.paidAmount).toLocaleString('en-LK', {minimumFractionDigits: 2}) : '-';
+        const quotationId = quotation ? quotation.id : '-';
+        const total = quotation ? 'Rs. ' + Number(quotation.quotationamount).toLocaleString('en-LK', { minimumFractionDigits: 2 }) : '-';
+        const paid = p.paidAmount != null ? 'Rs. ' + Number(p.paidAmount).toLocaleString('en-LK', { minimumFractionDigits: 2 }) : '-';
         return `
         <tr>
             <td><strong>${p.invoiceNo || 'PENDING'}</strong></td>
@@ -172,11 +388,11 @@ function renderCustomerTable(payments) {
 // update customer payment summary
 
 function updateCustomerSummary(payments) {
-    const total   = payments.length;
-    const paid    = payments.filter(p => p.paymentStatus === 'Paid').length;
+    const total = payments.length;
+    const paid = payments.filter(p => p.paymentStatus === 'Paid').length;
     const pending = total - paid;
-    document.getElementById('cpTotal').textContent   = total;
-    document.getElementById('cpPaid').textContent    = paid;
+    document.getElementById('cpTotal').textContent = total;
+    document.getElementById('cpPaid').textContent = paid;
     document.getElementById('cpPending').textContent = pending;
 }
 
@@ -195,27 +411,41 @@ document.getElementById('searchCustomerPayment').addEventListener('input', funct
 function submitAddCustomerPayment(e) {
     e.preventDefault();
 
-    const quotationId  = document.getElementById('cpQuotationId').value;
-    const customerId   = document.getElementById('cpCustomerId').value;
-    const status       = document.getElementById('cpStatus').value;
-    const method       = document.getElementById('cpMethod').value;
-    const amount       = document.getElementById('cpAmount').value;
-    const referenceNo  = document.getElementById('cpReferenceNo')?.value || '';
-    const notes        = document.getElementById('cpNotes').value;
+    const quotationId = document.getElementById('cpQuotationId').value;
+    const customerId = document.getElementById('cpCustomerId').value;
+    let status = document.getElementById('cpStatus').value;
+    const method = document.getElementById('cpMethod').value;
+    const amount = document.getElementById('cpAmount').value;
+    const referenceNo = document.getElementById('cpReferenceNo')?.value || '';
+    const notes = document.getElementById('cpNotes').value;
 
     if (!quotationId || !customerId || !status || !method || !amount) {
         showError('Please fill all required fields.');
         return;
     }
 
+    // Auto-resolve Paid/Partial based on balance due
+    if (status === 'Paid' || status === 'Partial') {
+        const opt = document.getElementById('cpQuotationId');
+        const selected = opt.options[opt.selectedIndex];
+        const quotationTotal = parseFloat(selected?.dataset?.quotationamount || 0);
+        const advance = parseFloat(selected?.dataset?.advance || 0);
+        const balanceDue = quotationTotal - advance;
+        const paidAmount = parseFloat(amount);
+        if (balanceDue > 0) {
+            status = paidAmount < balanceDue ? 'Partial' : 'Paid';
+            document.getElementById('cpStatus').value = status;
+        }
+    }
+
     const payload = {
-        quotationId:   parseInt(quotationId),
-        customerId:    parseInt(customerId),
+        quotationId: parseInt(quotationId),
+        customerId: parseInt(customerId),
         paymentStatus: status,
         paymentMethod: method,
-        paidAmount:    parseFloat(amount),
-        referenceNo:   referenceNo,
-        paymentNotes:  notes
+        paidAmount: parseFloat(amount),
+        referenceNo: referenceNo,
+        paymentNotes: notes
     };
 
     showLoading('Recording payment...');
@@ -235,27 +465,91 @@ let currentCustomerPaymentId = null;
 
 function openEditCustomerPaymentModal(payment) {
     currentCustomerPaymentId = payment.id;
-    document.getElementById('cpEditStatus').value      = payment.paymentStatus || '';
-    document.getElementById('cpEditMethod').value      = payment.paymentMethod || '';
-    document.getElementById('cpEditAmount').value      = payment.paidAmount   || '';
+    document.getElementById('cpEditStatus').value = payment.paymentStatus || '';
+    document.getElementById('cpEditMethod').value = payment.paymentMethod || '';
+    document.getElementById('cpEditAmount').value = payment.paidAmount || '';
     if (document.getElementById('cpEditReferenceNo')) {
         document.getElementById('cpEditReferenceNo').value = payment.referenceNo || '';
     }
-    document.getElementById('cpEditNotes').value       = payment.paymentNotes || '';
+    document.getElementById('cpEditNotes').value = payment.paymentNotes || '';
+
+    // Populate payable amount from linked quotation
+    const quotation = payment.quotation || payment.production?.quotationid;
+    const payableAmount = quotation ? (parseFloat(quotation.quotationamount) - parseFloat(quotation.advanceamount || 0)) : null;
+    const cpPayableEl = document.getElementById('cpEditPayableAmount');
+    const cpTotalDisplay = document.getElementById('cpEditTotalDisplay');
+    const cpBalanceDisplay = document.getElementById('cpEditBalanceDisplay');
+
+    if (payableAmount != null && !isNaN(payableAmount)) {
+        cpPayableEl.value = payableAmount;
+        cpTotalDisplay.textContent = 'Rs. ' + payableAmount.toLocaleString('en-LK', { minimumFractionDigits: 2 });
+        const alreadyPaid = parseFloat(payment.paidAmount) || 0;
+        const remaining = payableAmount - alreadyPaid;
+        cpBalanceDisplay.textContent = 'Rs. ' + (remaining < 0 ? 0 : remaining).toLocaleString('en-LK', { minimumFractionDigits: 2 });
+    } else {
+        cpPayableEl.value = '';
+        cpTotalDisplay.textContent = '-';
+        cpBalanceDisplay.textContent = '-';
+    }
+
+    // Reset warnings
+    document.getElementById('cpEditAmountWarning').style.display = 'none';
+    document.getElementById('cpEditAmountSuccess').style.display = 'none';
 
     const modal = new bootstrap.Modal(document.getElementById('editCustomerPaymentModal'));
     modal.show();
 }
 
+function validateCustomerEditPaidAmount() {
+    const paidAmount = parseFloat(document.getElementById('cpEditAmount').value);
+    const payableAmount = parseFloat(document.getElementById('cpEditPayableAmount').value);
+    const warning = document.getElementById('cpEditAmountWarning');
+    const success = document.getElementById('cpEditAmountSuccess');
+    const statusSelect = document.getElementById('cpEditStatus');
+    const balanceDisplay = document.getElementById('cpEditBalanceDisplay');
+
+    if (isNaN(paidAmount) || isNaN(payableAmount) || payableAmount <= 0) {
+        warning.style.display = 'none';
+        success.style.display = 'none';
+        return;
+    }
+
+    const remaining = payableAmount - paidAmount;
+    balanceDisplay.textContent = 'Rs. ' + (remaining < 0 ? 0 : remaining).toLocaleString('en-LK', { minimumFractionDigits: 2 });
+
+    if (paidAmount < payableAmount) {
+        warning.style.display = 'block';
+        success.style.display = 'none';
+        if (statusSelect.value === 'Paid') statusSelect.value = 'Partial';
+    } else {
+        warning.style.display = 'none';
+        success.style.display = 'block';
+        if (statusSelect.value === 'Partial') statusSelect.value = 'Paid';
+    }
+}
+
 function submitEditCustomerPayment(e) {
     e.preventDefault();
 
+    // Auto-resolve status based on paid vs payable amount
+    const paidAmount = parseFloat(document.getElementById('cpEditAmount').value) || 0;
+    const payableAmount = parseFloat(document.getElementById('cpEditPayableAmount').value) || 0;
+    const statusSelect = document.getElementById('cpEditStatus');
+
+    if ((statusSelect.value === 'Paid' || statusSelect.value === 'Partial') && payableAmount > 0) {
+        if (paidAmount < payableAmount) {
+            statusSelect.value = 'Partial';
+        } else {
+            statusSelect.value = 'Paid';
+        }
+    }
+
     const payload = {
-        paymentStatus: document.getElementById('cpEditStatus').value,
+        paymentStatus: statusSelect.value,
         paymentMethod: document.getElementById('cpEditMethod').value,
-        paidAmount:    parseFloat(document.getElementById('cpEditAmount').value),
-        referenceNo:   document.getElementById('cpEditReferenceNo')?.value || '',
-        paymentNotes:  document.getElementById('cpEditNotes').value
+        paidAmount: parseFloat(document.getElementById('cpEditAmount').value),
+        referenceNo: document.getElementById('cpEditReferenceNo')?.value || '',
+        paymentNotes: document.getElementById('cpEditNotes').value
     };
 
     showLoading('Updating payment...');
@@ -271,8 +565,8 @@ function submitEditCustomerPayment(e) {
 
 // Populate customer id when quotation is selected in the Add Payment form
 function onQuotationSelected(select) {
-    const opt  = select.options[select.selectedIndex];
-    const cid  = opt.dataset.customerId || '';
+    const opt = select.options[select.selectedIndex];
+    const cid = opt.dataset.customerId || '';
     const cname = opt.dataset.customerName || '';
     document.getElementById('cpCustomerId').value = cid;
     document.getElementById('cpCustomerDisplay').value = cname;
@@ -280,9 +574,9 @@ function onQuotationSelected(select) {
     const amount = opt.dataset.quotationamount || '';
     const advance = opt.dataset.advance || 0;
     const balance = parseFloat(amount) - parseFloat(advance);
-    document.getElementById('cpQuotationTotal').textContent = amount ? 'Rs. ' + parseFloat(amount).toLocaleString('en-LK', {minimumFractionDigits: 2}) : '-';
-    document.getElementById('cpAdvanceAmount').textContent  = 'Rs. ' + parseFloat(advance).toLocaleString('en-LK', {minimumFractionDigits: 2});
-    document.getElementById('cpBalanceDue').textContent     = 'Rs. ' + balance.toLocaleString('en-LK', {minimumFractionDigits: 2});
+    document.getElementById('cpQuotationTotal').textContent = amount ? 'Rs. ' + parseFloat(amount).toLocaleString('en-LK', { minimumFractionDigits: 2 }) : '-';
+    document.getElementById('cpAdvanceAmount').textContent = 'Rs. ' + parseFloat(advance).toLocaleString('en-LK', { minimumFractionDigits: 2 });
+    document.getElementById('cpBalanceDue').textContent = 'Rs. ' + balance.toLocaleString('en-LK', { minimumFractionDigits: 2 });
 }
 
 
@@ -300,8 +594,8 @@ function generateInvoice(paymentId) {
 }
 
 function renderInvoice(data) {
-    const q  = data.quotation || data.production?.quotationid || {};
-    const c  = data.customer  || q.customer || {};
+    const q = data.quotation || data.production?.quotationid || {};
+    const c = data.customer || q.customer || {};
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-LK', { year: 'numeric', month: 'long', day: '2-digit' });
 
@@ -413,11 +707,11 @@ function printInvoice() {
 
 function getStatusBadgeClass(status) {
     switch ((status || '').toLowerCase()) {
-        case 'paid':    return 'bg-success';
+        case 'paid': return 'bg-success';
         case 'pending': return 'bg-warning text-dark';
-        case 'unpaid':  return 'bg-danger';
+        case 'unpaid': return 'bg-danger';
         case 'partial': return 'bg-info text-dark';
-        default:        return 'bg-secondary';
+        default: return 'bg-secondary';
     }
 }
 

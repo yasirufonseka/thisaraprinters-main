@@ -49,7 +49,7 @@
             <div class="tab-header">
                 <button class="tab-btn active" onclick="openTab(event, 'suppliersView')">Suppliers View</button>
                 <button class="tab-btn" onclick="openTab(event, 'priceRequestsView')">Price Requests</button>
-                <button class="tab-btn" onclick="openTab(event, 'supplierPayments')">Supplier Payments</button>
+                <button class="tab-btn" onclick="openTab(event, 'supplierPayments')">Purchase Order</button>
             </div>
 
             <div id="suppliersView" class="tab-content" style="display: block;">
@@ -65,9 +65,9 @@
                         <select class="form-select border-0 bg-transparent" id="filterCategory"
                             style="width: 200px; border-left: 1px solid #ccc !important; border-radius: 0;">
                             <option value="">All Categories</option>
-                            <option value="Paper">Paper</option>
-                            <option value="Ink">Ink</option>
-                            <option value="Chemicals">Chemicals</option>
+                            <option th:each="category : ${categoryList}"
+                                th:value="${category.name}"
+                                th:text="${category.name}"></option>
                         </select>
                     </div>
                     <div class="d-flex gap-2 me-3">
@@ -99,17 +99,16 @@
                                 <td th:text="${supplier.email}">Mr. Perera</td>
                                 <td th:text="${supplier.contact}">abc@example.com</td>
                                 <td th:text="${supplier.address}">0771234567</td>
-                                <td > <span th:each="material, stat : ${supplier.materials}">
-        <span th:text="${material.item}"></span><span th:if="${!stat.last}">, </span>
+                                <td > <span th:each="category, stat : ${supplier.category}">
+        <span th:text="${category.name}"></span><span th:if="${!stat.last}">, </span>
     </span>
                                 </td>
                                 <td><span class="badge" th:text="${supplier.status}"
                                   th:class="${supplier.status == 'Active' ? 'badge bg-success' : 'badge bg-danger'}"></span>
                                 </td>
                                 <td class="d-flex flex-row justify-content-center gap-2">
-                                    <button class="btn btn-sm btn-outline-warning" title="Process Payment">Pay</button>
                                     <button class="btn btn-teal px-3 py-2" th:onclick="|updateSupplier(${supplier.id})|">Edit</button>
-                                    <button class="btn btn-red px-3 py-2">Delete</button>
+                                    <button class="btn btn-red px-3 py-2" th:onclick="|deleteSupplier(${supplier.id})|">Delete</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -174,24 +173,6 @@
             <!-- supplier payment tab -->
 
             <div id="supplierPayments" class="tab-content">
-                <!-- Info banner linking to the Payment Module -->
-                <div class="alert d-flex align-items-center gap-3 mb-4"
-                     style="background: linear-gradient(135deg,#1B263B,#2d3f5f); color:#fff; border:none; border-radius:10px; padding:16px 20px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#FFC107">
-                        <path d="M560-440q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35ZM280-320q-33 0-56.5-23.5T200-400v-320q0-33 23.5-56.5T280-800h560q33 0 56.5 23.5T920-720v320q0 33-23.5 56.5T840-320H280Zm80-80h400q0-33 23.5-56.5T840-480v-160q-33 0-56.5-23.5T760-720H360q0 33-23.5 56.5T280-640v160q33 0 56.5 23.5T360-400Zm-240 240q-33 0-56.5-23.5T40-240v-440h80v440h680v80H120Zm160-240v-320 320Z"/>
-                    </svg>
-                    <div class="flex-grow-1">
-                        <strong style="font-size:1rem;">Supplier Payments have moved!</strong>
-                        <div style="font-size:0.85rem; opacity:0.85; margin-top:2px;">
-                            All supplier payment tracking and customer invoicing is now managed in the dedicated <strong>Payment Module</strong>.
-                        </div>
-                    </div>
-                    <a th:href="@{/payment/management}" class="btn btn-sm"
-                       style="background:#FFC107; color:#1A1A1A; font-weight:700; white-space:nowrap; border-radius:6px; padding:8px 18px;">
-                        Go to Payments →
-                    </a>
-                </div>
-
                 <!--  add button area -->
                 <div class="d-flex flex-row align-items-center justify-content-between mb-4">
                     <div class="searchBar w-100 m-3">
@@ -348,7 +329,10 @@
                                         class="text-danger">*</span></label>
                                 <select class="form-select w-75" id="poItem" name="items" required>
                                     <option value="" selected disabled>Select Item / Material</option>
-                                    <option th:each="mat : ${materialsList}" th:value="${mat.material}" th:text="${mat.material}"></option>
+                                    <option th:each="mat : ${materialsList}" 
+                                            th:value="${mat.material != null ? (mat.material.material + (mat.gsm != null ? ' (' + mat.gsm + ' GSM)' : '')) : 'Variant ' + mat.id}" 
+                                            th:text="${mat.material != null ? (mat.material.material + (mat.gsm != null ? ' (' + mat.gsm + ' GSM)' : '')) : 'Variant ' + mat.id}">
+                                    </option>
                                 </select>
                             </div>
                             <div class="mb-3 w-50">
@@ -400,7 +384,7 @@
                                 <label for="prSupplierSelect" class="form-label">Select Supplier: <span class="text-danger">*</span></label>
                                 <select class="form-select w-75" id="prSupplierSelect" onchange="addSupplierFromDropdown(this)">
                                     <option value="" selected disabled>Choose Supplier</option>
-                                    <option th:each="supplier : ${suppliers}" th:value="${supplier.id}" th:text="${supplier.companyname}"></option>
+                                    <option th:each="supplier : ${suppliers}" th:value="${supplier.id}" th:text="${supplier.companyname}+ '--'+ ${#strings.listJoin(supplier.category.![name],',')}"></option>
                                 </select>
                             </div>
 
@@ -414,7 +398,8 @@
                             <div class="mb-3 w-50">
                                 <label for="category" class="form-label">Material Category: <span class="text-danger">*</span></label>
                                 <select class="form-select w-75" id="category" required >
-                                    <option value="" selected disabled>Select Material</option>
+                                    <option value="" selected disabled>Select Material Category</option>
+                                    <option th:each = "category : ${categoryList} " th:value="${category.id}" th:text="${category.name}"></option>
 
                                 </select>
                             </div>

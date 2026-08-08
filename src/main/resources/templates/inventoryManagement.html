@@ -191,6 +191,7 @@
                                     <td th:text="${grn.notes != null && !grn.notes.empty ? grn.notes : '-'}"></td>
                                     <td class="d-flex flex-row justify-content-center gap-2">
                                         <button class="btn btn-sm btn-teal px-3 py-2 text-dark" th:onclick="|editGRN(${grn.id})|">Edit</button>
+                                        <button class="btn btn-sm btn-info px-3 py-2 text-dark ms-1" th:onclick="|printGRN(${grn.id})|">Print</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -325,7 +326,9 @@
                         </div>
                         <div class="col-md-6">
                             <label for="usageJob" class="form-label">Job ID / Purpose</label>
-                            <input type="text" class="form-control" id="usageJob" name="purpose" placeholder="e.g. Job #1234" required>
+                            <select class="form-select" id="usageJob" name="purpose" required>
+                                <option value="" selected disabled>Select Ongoing Production Job</option>
+                            </select>
                             <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
                         </div>
                         <div class="col-md-6">
@@ -410,7 +413,7 @@
     <div class="modal fade" id="addMaterialModal" tabindex="-1" aria-labelledby="addMaterialModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg invModal">
             <div class="modal-content p-4 shadow-lg rounded-4">
-
+                
                 <div class="modal-header d-inline-flex justify-content-between align-items-center p-3">
                     <h4 class="modal-title text-white" id="addMaterialModalHeader">Add Material</h4>
                     <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal"
@@ -418,7 +421,7 @@
                 </div>
                 <div class="modal-body">
                     <form class="row g-3" id="materialFormData" onsubmit="addMaterial(event)">
-<!--                        select category-->
+                <!-- select category-->
                         <div class="col-md-6">
                             <label for="materialCategory" class="form-label">Material Category</label><label class="text-center form-label text-opacity-75">(Paper,Ink,Powder Spray .....)</label>
                             <select class="form-select form-control" id="materialCategory" name="materialCategory" required>
@@ -428,34 +431,41 @@
                         </div>
                         <div class="col-md-6 materials">
                             <label for="materialName" class="form-label">Material</label>
-                            <select id="materialName" name="materialName" class="form-control form-select"  required>
+                            <select id="materialName" name="materialName" class="form-control form-select" required>
                                 <option selected disabled>Select Material</option>
-                                <option th:value="custom">Custom</option>
+
                             </select>
+
                         </div>
-                        <div class="col-md-6">
+                        
+                            <div class="inline-block mt-2 " id="addNewMaterial">
+                           
+                        </div>
+                        
+                         
+                        <div class="col-md-6" id="materialGsmContainer">
                             <label for="materialgsm" class="form-label">GSM</label>
-                            <input type="number" class="form-control" id="materialgsm" name="materialgsm" placeholder="Enter quantity" required>
+                            <input type="number" class="form-control" id="materialgsm" name="materialgsm" placeholder="Enter GSM" required>
                             <div class="errorMessage text-danger" style="font-size: 0.8rem; margin-top: 4px;"></div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6" id="sheetPerReamContainer">
                             <label for="sheetperream" class="form-label">Sheet per ream</label>
                             <input type="number" class="form-control" id="sheetperream" name="sheetperream" placeholder="Enter quantity" required>
                         </div>
-<!--                        reorder level-->
+                        <!--reorder level-->
                         <div class="col-md-6">
                             <label for="reorderlevel" class="form-label">Reorder level</label>
-                            <input type="number" class="form-control" id="reorderlevel" name="reorderlevel" placeholder="Enter quantity" required>
+                            <input type="number" class="form-control" id="reorderlevel" name="reorderlevel" placeholder="Enter reorder level" required>
                         </div>
 
                         <div class="row mt-2">
-                            <div class="col-md-4 " id="hightContainer">
-                                    <label for="hightofpaper" class="form-label">Hight of paper</label>
-                                    <input type="number" class="form-control" id="hightofpaper" name="hightofpaper" placeholder="Enter reorder level" >
+                            <div class="col-md-4 " id="heightContainer">
+                                    <label for="heightOfPaper" class="form-label">Height of paper</label>
+                                    <input type="number" step="any" class="form-control" id="heightOfPaper" name="heightOfPaper" placeholder="Enter height" >
                            </div>
                             <div class="col-md-4 " id="widthContainer">
-                                <label for="widthtofpaper" class="form-label">Width of paper</label>
-                                <input type="number" class="form-control" id="widthtofpaper" name="widthtofpaper" placeholder="Enter reorder level" >
+                                <label for="widthOfPaper" class="form-label">Width of paper</label>
+                                <input type="number" step="any" class="form-control" id="widthOfPaper" name="widthOfPaper" placeholder="Enter width" >
                             </div>
 
                             <div class="col-md-4 " id="weidthContainer">
@@ -482,6 +492,7 @@
                         </div>
                     </form>
                 </div>
+                
             </div>
         </div>
     </div>

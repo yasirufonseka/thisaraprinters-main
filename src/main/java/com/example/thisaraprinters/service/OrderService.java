@@ -38,10 +38,12 @@ public class OrderService {
     private final PurchaseOrderRepo purchaseOrderRepo;
     private final ProductionRepo productionRepo;
     private final SupplierPaymentRepo supplierPaymentRepo;
+    private final ProductionService productionService;
 
     public OrderService(MaterialRepo materialsRepo, CustomerRepo customerRepo, QuotationRepo quotationRepo, 
                         MaterialVariantRepo materialVariantRepo, PriceRequestReplyRepo priceRequestReplyRepo, 
-                        PurchaseOrderRepo purchaseOrderRepo, ProductionRepo productionRepo, SupplierPaymentRepo supplierPaymentRepo) {
+                        PurchaseOrderRepo purchaseOrderRepo, ProductionRepo productionRepo, SupplierPaymentRepo supplierPaymentRepo,
+                        ProductionService productionService) {
         this.customerRepo = customerRepo;
         this.materialsRepo = materialsRepo;
         this.quotationRepo = quotationRepo;
@@ -50,6 +52,7 @@ public class OrderService {
         this.purchaseOrderRepo = purchaseOrderRepo;
         this.productionRepo = productionRepo;
         this.supplierPaymentRepo = supplierPaymentRepo;
+        this.productionService = productionService;
     }
 
     @Transactional
@@ -128,8 +131,11 @@ public class OrderService {
         double serverTotalAmount = serverBaseCost + serverServiceCharge;
         double serverUnitPrice = quantity > 0 ? (serverTotalAmount / quantity) : 0.0;
 
-        // Create entity
-        QuotationModel newQuotation = new QuotationModel();
+        // Create a new quotation, or update the requested existing quotation.
+        QuotationModel newQuotation = quotation.getId() > 0
+                ? quotationRepo.findById(quotation.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Quotation not found with ID: " + quotation.getId()))
+                : new QuotationModel();
 
         newQuotation.setProductsize(quotation.getProductsize() != null ? quotation.getProductsize().toUpperCase() : null);
         newQuotation.setQuantity(quantity);
@@ -140,11 +146,23 @@ public class OrderService {
         newQuotation.setFoiling(quotation.getFoiling());
         newQuotation.setLamination(quotation.getLamination());
         newQuotation.setBindingtype(quotation.getBindingtype() != null ? quotation.getBindingtype().toUpperCase() : null);
-        newQuotation.setPapertype("N/A");
+        // Store the paper type from the server-resolved material variant rather
+        // than a client supplied value. This keeps the quotation record aligned
+        // with the material actually used for pricing and imposition.
+        String paperType = "N/A";
+        if (!resolvedMaterials.isEmpty()
+                && resolvedMaterials.get(0).getMaterial() != null
+                && resolvedMaterials.get(0).getMaterial().getMaterial() != null
+                && !resolvedMaterials.get(0).getMaterial().getMaterial().isBlank()) {
+            paperType = resolvedMaterials.get(0).getMaterial().getMaterial().trim();
+        }
+        newQuotation.setPapertype(paperType);
         newQuotation.setAdvanceamount(quotation.getAdvanceamount());
         newQuotation.setQuotationstatus(quotation.getQuotationstatus() != null ? quotation.getQuotationstatus().toUpperCase() : "PENDING");
-        newQuotation.setQuotationdate(LocalDate.now());
-        newQuotation.setExpiryDate(calculateExpiryDate());
+        if (quotation.getId() == 0) {
+            newQuotation.setQuotationdate(LocalDate.now());
+            newQuotation.setExpiryDate(calculateExpiryDate());
+        }
         newQuotation.setMaterialsList(resolvedMaterials);
 
         // Set cost breakdown details
@@ -168,6 +186,7 @@ public class OrderService {
         }
     }
 
+    @Transactional
     private double[] getProductDimensionsMm(String productSize) {
         if (productSize == null) {
             return new double[]{0.0, 0.0};
@@ -227,7 +246,7 @@ public class OrderService {
             return 0.0;
         }
 
-        // 1. Try checking PriceRequestReply
+        //  checking PriceRequestReply
         try {
             List<PriceRequestReply> replies = priceRequestReplyRepo.findAll();
             for (PriceRequestReply reply : replies) {
@@ -251,7 +270,7 @@ public class OrderService {
             // fallback
         }
 
-        // 2. Try checking PurchaseOrder
+        //  Try checking PurchaseOrder
         try {
             List<PurchaseOrder> orders = purchaseOrderRepo.findAll();
             for (PurchaseOrder order : orders) {
@@ -285,7 +304,7 @@ public class OrderService {
             // fallback
         }
 
-        // 3. Fallback: Dynamic formula based on GSM and dimensions
+        // Fallback: Dynamic formula based on GSM and dimensions
         double gsm = variant.getGsm() != null ? variant.getGsm() : 80.0;
         double width = variant.getWidth() != null ? variant.getWidth() : 297.0;
         double height = variant.getHeight() != null ? variant.getHeight() : 420.0;
@@ -325,6 +344,7 @@ public class OrderService {
         ProductionModel job = new ProductionModel();
         job.setOrderId(orderId);
         job.setCustomerName(quotation.getCustomer() != null ? quotation.getCustomer().getName() : "Walk-in Customer");
+        job.setQuotationid(quotation);
         
         StringBuilder descBuilder = new StringBuilder();
         if (quotation.getQuotationdescription() != null && !quotation.getQuotationdescription().isEmpty()) {
@@ -339,7 +359,15 @@ public class OrderService {
         job.setPriority(priority != null ? priority : "Normal");
         job.setStatus("New Orders");
 
-        productionRepo.save(job);
+        // Derive total sheets from the quotation's saved cost breakdown:
+        // paperCost = totalSheets * paperRatePerSheet  →  totalSheets = paperCost / paperRatePerSheet
+        int totalSheetsNeeded = 0;
+        if (quotation.getPaperRatePerSheet() > 0) {
+            totalSheetsNeeded = (int) Math.round(quotation.getPaperCost() / quotation.getPaperRatePerSheet());
+        }
+        job.setTotalSheetsNeeded(totalSheetsNeeded);
+
+        productionService.createJob(job);
 
         // Save advance amount paid at time of production approval
         quotation.setAdvanceamount(advanceAmount);

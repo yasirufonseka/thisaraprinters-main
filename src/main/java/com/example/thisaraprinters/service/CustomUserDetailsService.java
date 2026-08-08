@@ -17,7 +17,10 @@ import com.example.thisaraprinters.model.RoleModel;
 import com.example.thisaraprinters.model.UserModel;
 import com.example.thisaraprinters.repository.UserRepo;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
+@Transactional(readOnly = true)
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepo userRepo;

@@ -23,12 +23,6 @@ public class PrivilegeService {
     private final RoleRepo roleRepo;
     private final ModuleRepo moduleRepo;
 
-    // All available modules in the system
-    public static final List<String> ALL_MODULES = Arrays.asList(
-        "Employee", "Supplier", "Inventory", "Production",
-        "Order", "Customer", "User", "Quotation"
-    );
-
     public PrivilegeService(PrivilegeRepo privilegeRepo, RoleRepo roleRepo, ModuleRepo moduleRepo) {
         this.privilegeRepo = privilegeRepo;
         this.roleRepo = roleRepo;
@@ -36,10 +30,10 @@ public class PrivilegeService {
     }
 
     /**
-     * Get all module names available in the system
+     * Get all module names available in the system from database
      */
     public List<String> getAllModules() {
-        return ALL_MODULES;
+        return moduleRepo.findAll().stream().map(Module::getName).toList();
     }
 
     /**

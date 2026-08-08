@@ -23,7 +23,7 @@ body {
 /* ===== Left Side - Branding ===== */
 .login-brand {
     flex: 1;
-    background: linear-gradient(135deg, #00AEEF 0%, #007acc 50%, #005c99 100%);
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #3730a3 100%);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -171,8 +171,8 @@ body {
 }
 
 .login-form .form-control:focus {
-    border-color: #00AEEF;
-    box-shadow: 0 0 0 4px rgba(0, 174, 239, 0.15);
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
     background-color: #FFFFFF;
 }
 
@@ -182,7 +182,7 @@ body {
 
 /* Login Button */
 .btn-login {
-    background: linear-gradient(135deg, #00AEEF 0%, #0088cc 100%);
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     color: #FFFFFF;
     border: none;
     border-radius: 10px;

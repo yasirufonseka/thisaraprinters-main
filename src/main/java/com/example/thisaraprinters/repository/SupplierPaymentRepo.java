@@ -9,6 +9,8 @@ import java.util.Optional;
 
 @Repository
 public interface SupplierPaymentRepo extends JpaRepository<SupplierPayment, Integer> {
+    boolean existsBySupplier_Id(Integer supplierId);
+
     Optional<SupplierPayment> findTopByPurchaseOrder_IdOrderByCreatedAtDesc(Integer purchaseOrderId);
 
     List<SupplierPayment> findByPurchaseOrder_Id(Integer purchaseOrderId);

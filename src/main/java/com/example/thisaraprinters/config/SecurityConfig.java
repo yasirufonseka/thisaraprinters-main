@@ -53,9 +53,8 @@ public class SecurityConfig {
                 // ===== Order Module =====
                 .requestMatchers(HttpMethod.GET, "/order/management").hasAuthority("Order_VIEW")
                 .requestMatchers(HttpMethod.GET, "/order/getall/**").hasAuthority("Order_VIEW")
-                .requestMatchers(HttpMethod.POST, "/order/add/**").hasAuthority("Order_INSERT")
-                .requestMatchers(HttpMethod.POST, "/order/update/**").hasAuthority("Order_UPDATE")
-                .requestMatchers(HttpMethod.DELETE, "/order/delete/**").hasAuthority("Order_DELETE")
+                .requestMatchers(HttpMethod.POST, "/order/save/quotation", "/order/send-to-production/**").hasAuthority("Order_INSERT")
+                .requestMatchers(HttpMethod.DELETE, "/order/quotation/delete/**").hasAuthority("Order_DELETE")
                 .requestMatchers("/order/**").hasAuthority("Order_VIEW")
 
                 // ===== Supplier Module =====
@@ -68,15 +67,16 @@ public class SecurityConfig {
 
                 // ===== Inventory Module =====
                 .requestMatchers(HttpMethod.GET, "/inventory/**").hasAuthority("Inventory_VIEW")
-                .requestMatchers(HttpMethod.POST, "/inventory/add/**").hasAuthority("Inventory_INSERT")
-                .requestMatchers(HttpMethod.POST, "/inventory/update/**").hasAuthority("Inventory_UPDATE")
-                .requestMatchers(HttpMethod.DELETE, "/inventory/delete/**").hasAuthority("Inventory_DELETE")
+                .requestMatchers(HttpMethod.POST, "/inventory/save/material", "/inventory/api/grn/save-full", "/inventory/api/stocklot/return").hasAuthority("Inventory_INSERT")
+                .requestMatchers(HttpMethod.POST, "/inventory/api/materials/usage").hasAuthority("Inventory_UPDATE")
+                .requestMatchers(HttpMethod.PUT, "/inventory/api/stocklot/**").hasAuthority("Inventory_UPDATE")
+                .requestMatchers(HttpMethod.DELETE, "/inventory/api/stocklot/**").hasAuthority("Inventory_DELETE")
                 .requestMatchers("/inventory/**").hasAuthority("Inventory_VIEW")
 
                 // ===== Production Module =====
                 .requestMatchers(HttpMethod.GET, "/production/**").hasAuthority("Production_VIEW")
-                .requestMatchers(HttpMethod.POST, "/production/add/**").hasAuthority("Production_INSERT")
-                .requestMatchers(HttpMethod.POST, "/production/update/**").hasAuthority("Production_UPDATE")
+                .requestMatchers(HttpMethod.POST, "/production/save").hasAuthority("Production_INSERT")
+                .requestMatchers(HttpMethod.POST, "/production/update-status", "/production/assign", "/production/upload-artwork/**").hasAuthority("Production_UPDATE")
                 .requestMatchers(HttpMethod.DELETE, "/production/delete/**").hasAuthority("Production_DELETE")
                 .requestMatchers("/production/**").hasAuthority("Production_VIEW")
 
@@ -99,10 +99,10 @@ public class SecurityConfig {
                 .requestMatchers("/privilege/**").hasAuthority("User_VIEW")
 
                 // ===== Reports Module =====
-                .requestMatchers("/reports/**").authenticated()
+                .requestMatchers("/reports/**").hasAuthority("Report_VIEW")
 
                 // ===== Payment Module =====
-                .requestMatchers(HttpMethod.GET, "/payment/management").authenticated()
+                .requestMatchers(HttpMethod.GET, "/payment/management").hasAnyAuthority("Customer_VIEW", "Supplier_VIEW")
                 .requestMatchers(HttpMethod.GET, "/payment/supplier-orders").hasAuthority("Supplier_VIEW")
                 .requestMatchers(HttpMethod.POST, "/payment/supplier/**").hasAuthority("Supplier_UPDATE")
                 .requestMatchers(HttpMethod.GET, "/payment/customer-payments").hasAuthority("Customer_VIEW")

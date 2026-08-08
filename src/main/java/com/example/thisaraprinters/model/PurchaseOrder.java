@@ -40,14 +40,17 @@ public class PurchaseOrder {
     @Column(name = "created_date")
     private LocalDate createdDate;
 
+    @Column(name = "total_amount")
+    private Double totalAmount;
+
+    @Column(name = "paid_amount")
+    private Double paidAmount;
+
     @Transient
     private String paymentStatus;
 
     @Transient
     private String paymentMethod;
-
-    @Transient
-    private Double paidAmount;
 
     @Transient
     private String paymentProof;

@@ -7,6 +7,9 @@ import com.example.thisaraprinters.model.Materials;
 import com.example.thisaraprinters.repository.CategoryRepo;
 import com.example.thisaraprinters.repository.MaterialRepo;
 import com.example.thisaraprinters.repository.MaterialVariantRepo;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -23,8 +26,8 @@ public class MaterialsService {
 
     @Autowired
     public MaterialsService(MaterialRepo materialRepo,
-                            CategoryRepo categoryRepo,
-                            MaterialVariantRepo materialVariantRepo) {
+            CategoryRepo categoryRepo,
+            MaterialVariantRepo materialVariantRepo) {
 
         this.materialRepo = materialRepo;
         this.categoryRepo = categoryRepo;
@@ -48,34 +51,32 @@ public class MaterialsService {
     // Add new material variant
     public String saveMaterial(AddNewMaterialDto material) {
 
-        if (material.getMaterialName() == null || material.getMaterialName().getId() == null) {
-            throw new IllegalArgumentException("MaterialName or ID is null");
-        }
-
-        Optional<Materials> materialOpt = materialRepo.findById(material.getMaterialName().getId());
-        if (materialOpt.isEmpty()) {
-            throw new IllegalArgumentException("Material not found");
-        }
+        Materials selectedMaterial = resolveMaterial(material);
 
         // Check if variant already exists
-        List<MaterialVariant> existingVariants = materialVariantRepo.findByMaterialId(material.getMaterialName().getId());
+        List<MaterialVariant> existingVariants = materialVariantRepo.findByMaterialId(selectedMaterial.getId());
         for (MaterialVariant existingVariant : existingVariants) {
             if (existingVariant.getGsm() != null && existingVariant.getGsm().equals(material.getMaterialgsm())
-                    && existingVariant.getHeight() != null && existingVariant.getHeight().equals(material.getHightofpaper())
-                    && existingVariant.getWidth() != null && existingVariant.getWidth().equals(material.getWidthtofpaper())) {
+                    && existingVariant.getHeight() != null && existingVariant.getHeight().equals(material.getHightMm())
+                    && existingVariant.getWidth() != null
+                    && existingVariant.getWidth().equals(material.getWidthtMm())) {
                 throw new DataIntegrityViolationException("Material variant already exists with same specifications");
             }
         }
+        System.out.println(material.getHightMm());
+
+        inchesToMmConverter(material);
 
         MaterialVariant saveMaterial = new MaterialVariant();
-        saveMaterial.setMaterial(materialOpt.get());
+        saveMaterial.setMaterial(selectedMaterial);
         saveMaterial.setGsm(material.getMaterialgsm());
-        saveMaterial.setHeight(material.getHightofpaper());
-        saveMaterial.setWidth(material.getWidthtofpaper());
+        saveMaterial.setHeight(material.getHightMm());
+        saveMaterial.setWidth(material.getWidthtMm());
         saveMaterial.setSheetsPerReam(material.getSheetperream());
         saveMaterial.setWeightPerUnit(material.getWeight());
         saveMaterial.setUnit(material.getUnit());
         saveMaterial.setReorderLevel(material.getReorderlevel());
+        saveMaterial.setPartNumber(partNumberGenerator(material, selectedMaterial));
         saveMaterial.setStatus("Sufficient");
 
         materialVariantRepo.save(saveMaterial);
@@ -83,34 +84,66 @@ public class MaterialsService {
         return "Material variant added successfully";
     }
 
+    private Materials resolveMaterial(AddNewMaterialDto material) {
+
+        if (material.getMaterialName() != null && material.getMaterialName().getId() != null) {
+            return materialRepo.findById(material.getMaterialName().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Material not found"));
+        }
+
+        String newMaterialName = material.getNewMaterialName() == null ? "" : material.getNewMaterialName().trim();
+        if (newMaterialName.isEmpty()) {
+            throw new IllegalArgumentException("Material name is required");
+        }
+
+        if (material.getCategory() == null || material.getCategory().getId() == null) {
+            throw new IllegalArgumentException("Material category is required");
+        }
+
+        Category category = categoryRepo.findById(material.getCategory().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Material category not found"));
+
+        Optional<Materials> existingMaterial = materialRepo.findByMaterialIgnoreCaseAndCategoryId(newMaterialName,
+                category.getId());
+        if (existingMaterial.isPresent()) {
+            return existingMaterial.get();
+        }
+
+        Materials createdMaterial = new Materials();
+        createdMaterial.setMaterial(newMaterialName);
+        createdMaterial.setCategory(category);
+        createdMaterial.setStatus("Active");
+        return materialRepo.save(createdMaterial);
+    }
+
     // Update material
     public String updateMaterial(Integer id, Materials material) {
         try {
-//            Optional<Materials> existingMaterial = materialRepo.findById(id);
-//
-//            if (existingMaterial.isEmpty()) {
-//                return "Material not found";
-//            }
-//
-//            Materials materialToUpdate = existingMaterial.get();
-//
-//            if (material.getMaterial() != null && !material.getMaterial().isEmpty()) {
-//                materialToUpdate.setMaterial(material.getMaterial());
-//            }
-//            if (material.getAvailablequantity() != null) {
-//                materialToUpdate.setAvailablequantity(material.getAvailablequantity());
-//            }
-//            if (material.getUnits() != null && !material.getUnits().isEmpty()) {
-//                materialToUpdate.setUnits(material.getUnits());
-//            }
-//            if (material.getReorderlevel() != null) {
-//                materialToUpdate.setReorderlevel(material.getReorderlevel());
-//            }
-//            if (material.getStatus() != null && !material.getStatus().isEmpty()) {
-//                materialToUpdate.setStatus(material.getStatus());
-//            }
+            // Optional<Materials> existingMaterial = materialRepo.findById(id);
+            //
+            // if (existingMaterial.isEmpty()) {
+            // return "Material not found";
+            // }
+            //
+            // Materials materialToUpdate = existingMaterial.get();
+            //
+            // if (material.getMaterial() != null && !material.getMaterial().isEmpty()) {
+            // materialToUpdate.setMaterial(material.getMaterial());
+            // }
+            // if (material.getAvailablequantity() != null) {
+            // materialToUpdate.setAvailablequantity(material.getAvailablequantity());
+            // }
+            // if (material.getUnits() != null && !material.getUnits().isEmpty()) {
+            // materialToUpdate.setUnits(material.getUnits());
+            // }
+            // if (material.getReorderlevel() != null) {
+            // materialToUpdate.setReorderlevel(material.getReorderlevel());
+            // }
+            // if (material.getStatus() != null && !material.getStatus().isEmpty()) {
+            // materialToUpdate.setStatus(material.getStatus());
+            // }
 
-           // materialRepo.save(materialToUpdate);
+            // materialRepo.save(materialToUpdate);
             return "Material updated successfully";
         } catch (Exception e) {
             return "Error updating material: " + e.getMessage();
@@ -121,7 +154,7 @@ public class MaterialsService {
     public String deleteMaterial(Integer id) {
         try {
             Optional<Materials> material = materialRepo.findById(id);
-            
+
             if (material.isEmpty()) {
                 return "Material not found";
             }
@@ -147,13 +180,15 @@ public class MaterialsService {
             }
 
             Materials mat = materialOpt.get();
-            //Integer currentQuantity = mat.getAvailablequantity() == null ? 0 : mat.getAvailablequantity();
+            // Integer currentQuantity = mat.getAvailablequantity() == null ? 0 :
+            // mat.getAvailablequantity();
 
-//            if (currentQuantity < quantityUsed) {
-//                return "Insufficient quantity. Available: " + currentQuantity + ", Required: " + quantityUsed;
-//            }
+            // if (currentQuantity < quantityUsed) {
+            // return "Insufficient quantity. Available: " + currentQuantity + ", Required:
+            // " + quantityUsed;
+            // }
 
-            //  mat.setAvailablequantity(currentQuantity - quantityUsed);
+            // mat.setAvailablequantity(currentQuantity - quantityUsed);
             updateMaterialStatus(mat);
 
             materialRepo.save(mat);
@@ -164,19 +199,102 @@ public class MaterialsService {
     }
 
     private void updateMaterialStatus(Materials material) {
-      //  int availableQuantity = material.getAvailablequantity() == null ? 0 : material.getAvailablequantity();
-      //  int reorderLevel = material.getReorderlevel() == null ? 0 : material.getReorderlevel();
+        // int availableQuantity = material.getAvailablequantity() == null ? 0 :
+        // material.getAvailablequantity();
+        // int reorderLevel = material.getReorderlevel() == null ? 0 :
+        // material.getReorderlevel();
 
-//        if (availableQuantity == 0) {
-//            material.setStatus("Out of Stock");
-//        } else if (availableQuantity < reorderLevel) {
-//            material.setStatus("Low Stock");
-//        } else {
-//            material.setStatus("Sufficient");
-//        }
+        // if (availableQuantity == 0) {
+        // material.setStatus("Out of Stock");
+        // } else if (availableQuantity < reorderLevel) {
+        // material.setStatus("Low Stock");
+        // } else {
+        // material.setStatus("Sufficient");
+        // }
     }
 
     public List<Category> getAllCategory() {
         return categoryRepo.findAll();
+    }
+
+
+    private String partNumberGenerator(AddNewMaterialDto material, Materials selectedMaterial) {
+
+        String partNumber = "";
+
+        if (material.getMaterialgsm() == null) {
+            throw new IllegalArgumentException("GSM is required for part number generation");
+        }
+        if (selectedMaterial == null) {
+            throw new IllegalArgumentException("Material name is required for part number generation");
+        }
+
+        String materialName = selectedMaterial.getMaterial();
+        String categoryName = selectedMaterial.getCategory() != null ? selectedMaterial.getCategory().getName() : null;
+        if (categoryName == null) {
+            throw new IllegalArgumentException("Category name is required for part number generation");
+        }
+
+        switch (categoryName) {
+            case "Ink":
+                partNumber = materialName.replaceAll("\\s+", "").trim().substring(0, Math.min(5, materialName.replaceAll("\\s+", "").length())).toUpperCase() + "-" + material.getMaterialgsm();
+                break;
+
+            case "Paper":
+                if (material.getMaterialName() == null && material.getNewMaterialName() != null) {
+                    String nm = material.getNewMaterialName().replaceAll("\\s+", "");
+                    partNumber = nm.substring(0, Math.min(5, nm.length())).toUpperCase() + "-" + material.getMaterialgsm();
+                } else {
+                    String nm = materialName.replaceAll("\\s+", "");
+                    partNumber = nm.substring(0, Math.min(5, nm.length())).toUpperCase() + "-" + material.getMaterialgsm();
+                }
+                break;
+
+            case "Plate":
+                if (material.getNewMaterialName() == null) {
+                    String nm = materialName.replaceAll("\\s+", "");
+                    partNumber = "PLATE-" + nm.substring(0, Math.min(5, nm.length())).toUpperCase();
+                } else {
+                    String nm = material.getNewMaterialName();
+                    partNumber = "PLATE" + nm.substring(0, Math.min(5, nm.length())).toUpperCase();
+                }
+                break;
+
+            case "Blanket":
+                if (material.getNewMaterialName() == null) {
+                    String nm = materialName.replaceAll("\\s+", "");
+                    partNumber = "BLANKET-" + nm.substring(0, Math.min(5, nm.length())).toUpperCase();
+                } else {
+                    String nm = material.getNewMaterialName();
+                    partNumber = "BLANKET" + nm.substring(0, Math.min(5, nm.length())).toUpperCase();
+                }
+                break;
+
+            case "Chemical Solution":
+                if (material.getNewMaterialName() == null) {
+                    String nm = materialName.replaceAll("\\s+", "");
+                    partNumber = "CHE-" + nm.substring(0, Math.min(5, nm.length())).toUpperCase();
+                } else {
+                    String nm = material.getNewMaterialName();
+                    partNumber = "CHE" + nm.substring(0, Math.min(5, nm.length())).toUpperCase();
+                }
+                break;
+
+            default:
+                String nm = materialName.replaceAll("\\s+", "");
+                partNumber = nm.substring(0, Math.min(5, nm.length())).toUpperCase() + "-" + material.getMaterialgsm();
+                break;
+        }
+        return partNumber;
+    }  
+
+
+    private void inchesToMmConverter(AddNewMaterialDto variant) {
+        if (variant.getHightMm() == null && variant.getWidthtMm() == null) {
+            throw new  IllegalArgumentException("Hight and Width are mandatory");
+        }
+         variant.setWidthtMm(variant.getWidthtMm() * 25.4);
+         variant.setHightMm(variant.getHightMm() * 25.4);
+
     }
 }

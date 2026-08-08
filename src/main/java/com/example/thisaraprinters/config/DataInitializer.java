@@ -20,10 +20,16 @@ import com.example.thisaraprinters.repository.ModuleRepo;
 import com.example.thisaraprinters.repository.PrivilegeRepo;
 import com.example.thisaraprinters.repository.RoleRepo;
 import com.example.thisaraprinters.repository.UserRepo;
-import com.example.thisaraprinters.service.PrivilegeService;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
+
+    private static final List<String> DEFAULT_MODULES = java.util.Arrays.asList(
+        "Employee", "Supplier", "Inventory", "Production",
+        "Order", "Customer", "User", "Quotation", "Payment", "Report"
+    );
 
     private final UserRepo userRepo;
     private final RoleRepo roleRepo;
@@ -65,8 +71,8 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         // Ensure all modules exist
-        for (int i = 0; i < PrivilegeService.ALL_MODULES.size(); i++) {
-            String moduleName = PrivilegeService.ALL_MODULES.get(i);
+        for (int i = 0; i < DEFAULT_MODULES.size(); i++) {
+            String moduleName = DEFAULT_MODULES.get(i);
             if (moduleRepo.findByName(moduleName) == null) {
                 Module module = new Module();
                 module.setId(i + 1);
@@ -78,7 +84,7 @@ public class DataInitializer implements CommandLineRunner {
         // 2. Setup Full Privileges for Admin Role (only if not already setup)
         if (privilegeRepo.count() == 0) {
             List<PrivilegeModel> adminPrivileges = new ArrayList<>();
-            for (String moduleName : PrivilegeService.ALL_MODULES) {
+            for (String moduleName : DEFAULT_MODULES) {
                 Module module = moduleRepo.findByName(moduleName);
                 if (module != null) {
                     PrivilegeModel priv = new PrivilegeModel();

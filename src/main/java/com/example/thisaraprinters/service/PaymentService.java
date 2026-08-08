@@ -3,6 +3,7 @@ package com.example.thisaraprinters.service;
 import com.example.thisaraprinters.dto.CustomerPaymentDto;
 import com.example.thisaraprinters.model.*;
 import com.example.thisaraprinters.repository.*;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -21,11 +22,11 @@ public class PaymentService {
     private final ProductionRepo productionRepo;
 
     public PaymentService(PurchaseOrderRepo purchaseOrderRepo,
-                          SupplierPaymentRepo supplierPaymentRepo,
-                          CustomerPaymentRepo customerPaymentRepo,
-                          QuotationRepo quotationRepo,
-                          CustomerRepo customerRepo,
-                          ProductionRepo productionRepo) {
+            SupplierPaymentRepo supplierPaymentRepo,
+            CustomerPaymentRepo customerPaymentRepo,
+            QuotationRepo quotationRepo,
+            CustomerRepo customerRepo,
+            ProductionRepo productionRepo) {
         this.purchaseOrderRepo = purchaseOrderRepo;
         this.supplierPaymentRepo = supplierPaymentRepo;
         this.customerPaymentRepo = customerPaymentRepo;
@@ -34,11 +35,13 @@ public class PaymentService {
         this.productionRepo = productionRepo;
     }
 
-    //  Supplier Payment
+    // Supplier Payment
+    public List<SupplierPayment> getAllSupplierPayments() {
+        return supplierPaymentRepo.findAll();
+    }
 
-    
-     // Returns all purchase orders with their latest payment info attached.
-     
+    // Returns all purchase orders with their latest payment info attached.
+
     public List<PurchaseOrder> getAllSupplierOrders() {
         return purchaseOrderRepo.findAll().stream()
                 .peek(this::attachLatestPaymentInfo)
@@ -46,63 +49,105 @@ public class PaymentService {
     }
 
     /**
-     * Delegates supplier payment update to the same logic already used in SupplierService,
+     * Delegates supplier payment update to the same logic already used in
+     * SupplierService,
      * so the payment module stays in sync with the supplier module data.
      */
-    public String updateSupplierPayment(Integer orderId, String paymentStatus,
-                                        String paymentMethod, Double paidAmount,
-                                        String paymentProofFileName, String paymentNotes) {
+    public String updateSupplierPayment(
+            Integer orderId, String paymentStatus,
+            String paymentMethod, Double paidAmount,
+            String paymentProofFileName, String paymentNotes) {
+
+        //find the order 
         PurchaseOrder order = purchaseOrderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Purchase Order not found"));
 
-        String resolvedStatus = (paymentStatus != null && !paymentStatus.isBlank())
-                ? paymentStatus : "Unpaid";
+        //check whether the order is already paid
+        if(order.getPaidAmount() >= order.getTotalAmount() ){
+            throw new RuntimeException("Order is already fully paid");
+        }
 
-        SupplierPayment payment = supplierPaymentRepo
-                .findTopByPurchaseOrder_IdOrderByCreatedAtDesc(orderId)
-                .orElseGet(SupplierPayment::new);
+        double orderTotal = order.getTotalAmount() != null ? order.getTotalAmount() : 0.0;
+        System.out.println(orderTotal);
+        System.out.println(order.getTotalAmount());
 
+        // if (orderTotal <= 0.0 && order.getTotalAmount() != null && order.getTotalAmount() != null) {
+        //     orderTotal = order.getTotalAmount();
+        // }
+
+        double currentPaid = supplierPaymentRepo.findByPurchaseOrder_Id(orderId).stream()
+                .mapToDouble(payment -> payment.getPaidAmount() != null ? payment.getPaidAmount() : 0.0)
+                .sum();
+        double newPaymentAmount = paidAmount != null ? paidAmount : 0.0;
+        double updatedPaidAmount = currentPaid + newPaymentAmount;
+        System.out.println(updatedPaidAmount);
+        System.out.println(currentPaid);
+        System.out.println(newPaymentAmount);
+
+        if(updatedPaidAmount > orderTotal) {
+            throw new RuntimeException("Paid amount is greater than the order total");
+        }
+        
+        String resolvedStatus = (paymentStatus != null && !paymentStatus.isBlank()) ? paymentStatus : "Unpaid";
+        if (orderTotal > 0.0) {
+            if (updatedPaidAmount < orderTotal) {
+                resolvedStatus = "Partial";
+            } else if (Double.compare(updatedPaidAmount, orderTotal) == 0) {
+                resolvedStatus = "Paid";
+            }
+        }
+
+        SupplierPayment payment = new SupplierPayment();
         payment.setPurchaseOrder(order);
         payment.setSupplier(order.getSupplier());
         payment.setPaymentStatus(resolvedStatus);
-        if (paymentMethod != null && !paymentMethod.isEmpty()) {
-            payment.setPaymentMethod(paymentMethod);
-        }
-        if (paidAmount != null) {
-            payment.setPaidAmount(paidAmount);
-        }
-        if (paymentProofFileName != null && !paymentProofFileName.isEmpty()) {
-            payment.setPaymentProof(paymentProofFileName);
-        }
-        if (paymentNotes != null && !paymentNotes.isEmpty()) {
-            payment.setPaymentNotes(paymentNotes);
-        }
+        payment.setPaymentMethod(paymentMethod);
+        payment.setPaidAmount(newPaymentAmount);
+        payment.setPaymentProof(paymentProofFileName);
+        payment.setPaymentNotes(paymentNotes);
         payment.setCreatedAt(LocalDateTime.now());
         supplierPaymentRepo.save(payment);
-        return "Supplier payment updated successfully";
+
+        order.setPaidAmount(updatedPaidAmount);
+        order.setPaymentStatus(resolvedStatus);
+        purchaseOrderRepo.save(order);
+
+        return "Supplier payment recorded successfully (Status: " + resolvedStatus + ")";
     }
 
     private void attachLatestPaymentInfo(PurchaseOrder order) {
-        if (order == null || order.getId() == null) return;
-        SupplierPayment payment = supplierPaymentRepo
-                .findTopByPurchaseOrder_IdOrderByCreatedAtDesc(order.getId())
-                .orElse(null);
-        if (payment == null) {
+        if (order == null || order.getId() == null)
+            return;
+
+        List<SupplierPayment> payments = supplierPaymentRepo.findByPurchaseOrder_Id(order.getId());
+        if (payments == null || payments.isEmpty()) {
             order.setPaymentStatus("Unpaid");
             order.setPaymentMethod(null);
             order.setPaidAmount(0.0);
             order.setPaymentProof(null);
             order.setPaymentNotes(null);
-        } else {
-            order.setPaymentStatus(payment.getPaymentStatus());
-            order.setPaymentMethod(payment.getPaymentMethod());
-            order.setPaidAmount(payment.getPaidAmount());
-            order.setPaymentProof(payment.getPaymentProof());
-            order.setPaymentNotes(payment.getPaymentNotes());
+            return;
         }
+
+        SupplierPayment latest = payments.stream()
+                .max((a, b) -> a.getCreatedAt() == null || b.getCreatedAt() == null
+                        ? 0
+                        : a.getCreatedAt().compareTo(b.getCreatedAt()))
+                .orElse(null);
+
+        double paidSum = payments.stream()
+                .mapToDouble(payment -> payment.getPaidAmount() != null ? payment.getPaidAmount() : 0.0)
+                .sum();
+
+        order.setPaymentStatus(
+                latest != null && latest.getPaymentStatus() != null ? latest.getPaymentStatus() : "Unpaid");
+        order.setPaymentMethod(latest != null ? latest.getPaymentMethod() : null);
+        order.setPaidAmount(paidSum);
+        order.setPaymentProof(latest != null ? latest.getPaymentProof() : null);
+        order.setPaymentNotes(latest != null ? latest.getPaymentNotes() : null);
     }
 
-    // ─── Customer Payment Methods ─────────────────────────────────────────────
+    // Customer Payment Methods
 
     /**
      * Returns all customer payments with their linked quotation and customer info.
@@ -168,7 +213,22 @@ public class PaymentService {
         payment.setQuotation(quotation);
         payment.setProduction(production);
         payment.setCustomer(customer);
-        payment.setPaymentStatus(customerPayments.getPaymentStatus());
+
+        // Auto-resolve payment status: Partial if paidAmount < balance due, Paid if >=
+        // balance
+        String resolvedStatus = customerPayments.getPaymentStatus();
+        double quotationTotal = quotation.getQuotationamount();
+        double advancePaid = quotation.getAdvanceamount();
+        double balanceDue = quotationTotal - advancePaid;
+        double paid = customerPayments.getPaidAmount() != null ? customerPayments.getPaidAmount() : 0.0;
+
+        if ("Paid".equalsIgnoreCase(resolvedStatus) || "Partial".equalsIgnoreCase(resolvedStatus)) {
+            if (balanceDue > 0) {
+                resolvedStatus = paid < balanceDue ? "Partial" : "Paid";
+            }
+        }
+
+        payment.setPaymentStatus(resolvedStatus);
         payment.setPaymentMethod(customerPayments.getPaymentMethod());
         payment.setPaidAmount(customerPayments.getPaidAmount());
         payment.setReferenceNo(customerPayments.getReferenceNo());
@@ -194,7 +254,20 @@ public class PaymentService {
         CustomerPayment payment = customerPaymentRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Payment not found"));
 
-        payment.setPaymentStatus(dto.getPaymentStatus());
+        // Auto-resolve payment status based on paid amount vs balance due
+        String resolvedStatus = dto.getPaymentStatus();
+        if (payment.getQuotation() != null
+                && ("Paid".equalsIgnoreCase(resolvedStatus) || "Partial".equalsIgnoreCase(resolvedStatus))) {
+            double quotationTotal = payment.getQuotation().getQuotationamount();
+            double advancePaid = payment.getQuotation().getAdvanceamount();
+            double balanceDue = quotationTotal - advancePaid;
+            double paid = dto.getPaidAmount() != null ? dto.getPaidAmount() : 0.0;
+            if (balanceDue > 0) {
+                resolvedStatus = paid < balanceDue ? "Partial" : "Paid";
+            }
+        }
+
+        payment.setPaymentStatus(resolvedStatus);
         payment.setPaymentMethod(dto.getPaymentMethod());
         payment.setPaidAmount(dto.getPaidAmount());
         payment.setReferenceNo(dto.getReferenceNo());
@@ -202,14 +275,20 @@ public class PaymentService {
         payment.setPaymentDate(LocalDate.now());
 
         customerPaymentRepo.save(payment);
-        return "Payment updated successfully";
+        return "Payment updated successfully (Status: " + resolvedStatus + ")";
     }
 
     /**
-     * Fetches all data needed to render the invoice for a given customer payment id.
+     * Fetches all data needed to render the invoice for a given customer payment
+     * id.
      */
     public CustomerPayment getInvoiceData(Integer paymentId) {
         return customerPaymentRepo.findById(paymentId)
                 .orElseThrow(() -> new RuntimeException("Invoice not found"));
+    }
+
+    public List<ProductionModel> getAllProductions() {
+
+        return productionRepo.findAll();
     }
 }

@@ -58,6 +58,7 @@
                         </div>
                         
                         <button class="btn btn-gold d-inline-flex align-items-center justify-content-center gap-2 px-3 py-2"
+                                onclick="resetQuotationEditor()"
                                 data-bs-toggle="modal"
                                 data-bs-target="#generateQuatationModal">
                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor" class="flex-shrink-0">
@@ -142,7 +143,7 @@
         <div class="modal-dialog modal-dialog-centered modal-xl  empModal">
             <div class="modal-content p-4 shadow-lg rounded-4">
                 <div class="modal-header  d-inline-flex justify-content-between align-items-center p-3">
-                    <h4 class="modal-title text-white">Generate Quotation</h4>
+                    <h4 class="modal-title text-white" id="quotationModalTitle">Generate Quotation</h4>
                     <button type="button" class="btn btn-close " data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -454,7 +455,7 @@
 
                         <!-- Actions -->
                         <div class="col-12 text-end mt-4 d-flex justify-content-end gap-2">
-                            <button type="submit" class="btn btn-teal">Generate Quotation</button>
+                            <button type="submit" class="btn btn-teal" id="quotationSubmitButton">Generate Quotation</button>
                             <button type="reset" class="btn btn-secondary" onclick="setTimeout(calculateQuotation, 0)">Reset</button>
                         </div>
                     </form>

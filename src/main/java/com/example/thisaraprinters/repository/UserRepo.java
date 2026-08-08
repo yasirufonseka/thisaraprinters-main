@@ -10,6 +10,6 @@ public interface UserRepo extends JpaRepository<UserModel, Integer> {
     UserModel findByUsername(String username);
 
     @Query(value = "SELECT id FROM users WHERE username = ?1", nativeQuery = true)
-    UserModel findIdByUsername(String username);
+    Integer findIdByUsername(String username);
 
 }

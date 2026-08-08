@@ -61,7 +61,7 @@
                         <input type="text" class="searchInput" id="searchUser" placeholder="Search User">
                     </div>
                     <button class="btn btn-gold text-dark" data-bs-toggle="modal" onclick="getEmployeeList()"
-                        data-bs-target="#addUserModal">Add
+                        data-bs-target="#addUserModal" sec:authorize="hasAuthority('User_INSERT')">Add
                         User</button>
                 </div>
 
@@ -74,6 +74,7 @@
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Designation</th>
+                                <th>User Role</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -85,13 +86,15 @@
                                 <td th:text="${user.username}"></td>
                                 <td th:text="${user.employeeid?.email ?: 'N/A'}"></td>
                                 <td th:text="${user.employeeid?.designationid?.designation ?: 'N/A'}">johndoe@example.com</td>
+                                <td th:text="${user.role?.name ?: 'No Role'}">User Role</td>
                                 <td><span class="badge" th:text="${user.status}"
                                         th:class="${user.status == 'Active' ? 'badge bg-success' : 'badge bg-danger'}"></span>
                                 </td>
                                 <td class="d-flex flex-row justify-content-center gap-2">
                                     <button class="btn btn-teal px-3 text-dark py-2"
-                                        th:onclick="|updateUser(${user.id})|">Edit</button>
-                                    <button class="btn btn-red px-3 text-dark py-2">Delete</button>
+                                        th:onclick="|updateUser(${user.id})|" sec:authorize="hasAuthority('User_UPDATE')">Edit</button>
+                                    <button class="btn btn-red px-3 text-dark py-2"
+                                        th:onclick="|deleteUser(${user.id})|" sec:authorize="hasAuthority('User_DELETE')">Delete</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -112,7 +115,7 @@
                             </svg></span>
                         <input type="text" class="searchInput" id="searchPrivilege" placeholder="Search Privilege">
                     </div>
-                    <button class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#addPrivilegeModal" onclick="resetPrivilegeForm()">Add
+                    <button class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#addPrivilegeModal" onclick="resetPrivilegeForm()" sec:authorize="hasAuthority('User_INSERT')">Add
                         Privilege</button>
                 </div>
 
@@ -128,16 +131,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- show privilege data -->
-                            <tr>
-                                <td>R001</td>
-                                <td>Admin</td>
-                                <td>All Modules</td>
-                                <td class="d-flex flex-row justify-content-center gap-2">
-                                    <button class="btn btn-teal px-3 py-2 text-dark ms-2">Edit</button>
-                                    <button class="btn btn-red px-3 text-dark py-2 ms-2">Delete</button>
-                                </td>
-                            </tr>
+                            <!-- show privilege data dynamically generated via JS -->
                         </tbody>
                     </table>
                 </div>

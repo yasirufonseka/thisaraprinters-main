@@ -1,10 +1,8 @@
 package com.example.thisaraprinters.controller;
 
 import com.example.thisaraprinters.dto.AddNewMaterialDto;
-import com.example.thisaraprinters.dto.InventoryDto;
+import com.example.thisaraprinters.dto.MaterialUsageDto;
 import com.example.thisaraprinters.model.Category;
-import com.example.thisaraprinters.model.Inventory;
-import com.example.thisaraprinters.model.MaterialVariant;
 import com.example.thisaraprinters.model.Materials;
 import com.example.thisaraprinters.service.InventoryService;
 import com.example.thisaraprinters.service.MaterialsService;
@@ -18,7 +16,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/inventory")
@@ -60,9 +57,12 @@ public class InventoryController {
 
   @PostMapping("/save/material")
   public ResponseEntity<?> saveMaterial(@RequestBody AddNewMaterialDto material) {
-    String resualt = materialsService.saveMaterial(material);
-
-    return ResponseEntity.status(200).body(Map.of("message", resualt));
+    try {
+      String resualt = materialsService.saveMaterial(material);
+      return ResponseEntity.status(200).body(Map.of("message", resualt));
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+    }
   }
 
   @PostMapping("/api/grn/save-full")
@@ -81,22 +81,11 @@ public class InventoryController {
     return ResponseEntity.status(200).body(resualt);
   }
 
-  // ── Get all purchase orders for the GRN modal dropdown ──
+  // Get all purchase orders for the GRN modal dropdown
   @GetMapping("/api/purchase-orders")
   public ResponseEntity<?> getPurchaseOrders() {
     try {
-      List<java.util.Map<String, Object>> result = supplierService.getAllPurchaseOrders().stream()
-          .map(po -> {
-            java.util.Map<String, Object> map = new java.util.LinkedHashMap<>();
-            map.put("id", po.getId());
-            map.put("poNumber", po.getId() != null ? "PO-" + po.getId() : "");
-            map.put("items", po.getItems());
-            map.put("supplierId",   po.getSupplier() != null ? po.getSupplier().getId() : null);
-            map.put("supplierName", po.getSupplier() != null ? po.getSupplier().getCompanyname() : "");
-            return map;
-          })
-          .collect(java.util.stream.Collectors.toList());
-      return ResponseEntity.ok(result);
+      return ResponseEntity.ok(supplierService.getPurchaseOrdersForGrn());
     } catch (Exception e) {
       return ResponseEntity.status(500).body(Map.of("message", "Error: " + e.getMessage()));
     }
@@ -108,7 +97,7 @@ public class InventoryController {
     return ResponseEntity.status(200).body(resualt);
   }
 
-  // ── Get GRN data by GRN (Inventory) ID (feeds edit modal) ──
+  //  Get GRN data by GRN (Inventory) ID (feeds edit modal) 
   @GetMapping("/api/grn/{id}")
   public ResponseEntity<?> getGrnById(@PathVariable("id") Integer id) {
     try {
@@ -118,7 +107,7 @@ public class InventoryController {
     }
   }
 
-  // ── Get GRN data by StockLot ID (feeds edit modal) ──
+  //  Get GRN data by StockLot ID (feeds edit modal) 
   @GetMapping("/api/stocklot/{id}")
   public ResponseEntity<?> getGrnByStockLot(@PathVariable("id") Integer id) {
     try {
@@ -139,8 +128,7 @@ public class InventoryController {
       return ResponseEntity.status(400).body(Map.of("message", "Error: " + e.getMessage()));
     }
   }
-
-  // ── Delete StockLot + its linked GRN ──
+  //  Delete StockLot + its linked GRN 
   @DeleteMapping("/api/stocklot/{id}/delete")
   public ResponseEntity<?> deleteStockLot(@PathVariable("id") Integer id) {
     try {
@@ -151,7 +139,7 @@ public class InventoryController {
     }
   }
 
-  // ── Save Return Stock ──
+  //  Save Return Stock 
   @PostMapping("/api/stocklot/return")
   public ResponseEntity<?> saveReturnStock(@RequestBody com.example.thisaraprinters.dto.ReturnStockDto dto) {
     try {
@@ -159,6 +147,16 @@ public class InventoryController {
       return ResponseEntity.ok(Map.of("message", "Return stock recorded successfully."));
     } catch (Exception e) {
       return ResponseEntity.status(400).body(Map.of("message", "Error: " + e.getMessage()));
+    }
+  }
+
+  @PostMapping("/api/materials/usage")
+  public ResponseEntity<?> recordUsage(@RequestBody MaterialUsageDto dto) {
+    try {
+      inventoryService.recordUsage(dto);
+      return ResponseEntity.ok(Map.of("message", "Material usage recorded successfully."));
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
     }
   }
 }

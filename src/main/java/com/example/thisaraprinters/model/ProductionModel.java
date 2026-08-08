@@ -38,12 +38,27 @@ public class ProductionModel {
     @Column(name = "artwork_original_name")
     private String artworkOriginalName; // original file name shown to the user
 
-    @Column(name = "date_sent_ to_ production")
+    @Column(name = "date_sent_to_production")
     private LocalDate dateSentToProduction;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_employee_id")
+    private EmployeeModel assignedEmployee;
+
+    @Column(name = "started_at")
+    private LocalDate startedAt;
+
+    @Column(name = "completed_at")
+    private LocalDate completedAt;
+
+    @Column(name = "delivered_at")
+    private LocalDate deliveredAt;
+
+    @Column(name = "total_sheets_needed")
+    private Integer totalSheetsNeeded;
 
 
     @OneToOne( cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name ="quotations_id" , referencedColumnName = "id")
     private QuotationModel quotationid;
 }
-

@@ -9,5 +9,5 @@ import java.util.Optional;
 
 public interface ProductionRepo extends JpaRepository<ProductionModel, Integer> {
     Optional<ProductionModel> findByOrderId(String orderId);
-    List<ProductionModel> findByDeadlineBetween(LocalDate start, LocalDate end);
+    List<ProductionModel> findByDateSentToProductionBetween(LocalDate start, LocalDate end);
 }

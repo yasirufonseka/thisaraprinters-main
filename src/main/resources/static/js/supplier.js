@@ -89,9 +89,62 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         prQtyEl.addEventListener("input", () => clearFieldError("prQuantity"));
     }
+
+    // Reset modal mode when closed
+    const addSupplierModalEl = document.getElementById("addSupplierModal");
+    if (addSupplierModalEl) {
+        addSupplierModalEl.addEventListener("hidden.bs.modal", function () {
+            isUpdate = false;
+            document.getElementById("supplierForm")?.reset();
+            const modalTitle = addSupplierModalEl.querySelector(".modal-title");
+            if (modalTitle) modalTitle.textContent = "Add New Supplier";
+            const submitBtn = addSupplierModalEl.querySelector("button[type='submit']");
+            if (submitBtn) submitBtn.textContent = "Add Supplier";
+        });
+        addSupplierModalEl.addEventListener("show.bs.modal", function () {
+            if (!isUpdate) {
+                document.getElementById("supplierForm")?.reset();
+                const modalTitle = addSupplierModalEl.querySelector(".modal-title");
+                if (modalTitle) modalTitle.textContent = "Add New Supplier";
+                const submitBtn = addSupplierModalEl.querySelector("button[type='submit']");
+                if (submitBtn) submitBtn.textContent = "Add Supplier";
+            }
+        });
+    }
+
+    const supplierSearch = document.getElementById("search");
+    const categoryFilter = document.getElementById("filterCategory");
+    const priceRequestSearch = document.getElementById("searchPriceRequest");
+    const purchaseOrderSearch = document.getElementById("searchPayment");
+
+    const filterSupplierRows = () => {
+        const query = (supplierSearch?.value || "").trim().toLowerCase();
+        const category = (categoryFilter?.value || "").trim().toLowerCase();
+
+        document.querySelectorAll("#suppliersView .supplierTable tbody tr").forEach((row) => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = (!query || text.includes(query)) && (!category || text.includes(category)) ? "" : "none";
+        });
+    };
+
+    const filterTableRows = (containerSelector, query) => {
+        document.querySelectorAll(`${containerSelector} tbody tr`).forEach((row) => {
+            if (row.cells.length === 1) return;
+            row.style.display = !query || row.textContent.toLowerCase().includes(query) ? "" : "none";
+        });
+    };
+
+    supplierSearch?.addEventListener("input", filterSupplierRows);
+    categoryFilter?.addEventListener("change", filterSupplierRows);
+    priceRequestSearch?.addEventListener("input", () => {
+        filterTableRows("#priceRequestsView .supplierTable", priceRequestSearch.value.trim().toLowerCase());
+    });
+    purchaseOrderSearch?.addEventListener("input", () => {
+        filterTableRows("#supplierPayments .supplierTable", purchaseOrderSearch.value.trim().toLowerCase());
+    });
 });
 
-// ─── Validate the supplier form before submitting ─────────────────────────────
+//  Validate the supplier form before submitting
 // Returns true if everything looks good, false if we found something missing
 function validateSupplierForm() {
     let isValid = true;
@@ -144,39 +197,40 @@ const fetchMaterial = ()=> {
     })
 }
 
-const getMaterialCategory = (item) => {
-    if (!item) return "";
-    if (typeof item.category === "string") return item.category;
-    if (item.category && typeof item.category.name === "string") return item.category.name;
-    if (item.categoryid && typeof item.categoryid === "string") return item.categoryid;
-    if (item.categoryid && item.categoryid.name) return item.categoryid.name;
-    return "";
-}
+// const getMaterialCategory = (item) => {
+//     if (!item) return "";
+//     if (typeof item.category === "string") return item.category;
+//     if (item.category && typeof item.category.name === "string") return item.category.name;
+//     if (item.categoryid && typeof item.categoryid === "string") return item.categoryid;
+//     if (item.categoryid && item.categoryid.name) return item.categoryid.name;
+//     return "";
+// }
 
 const renderCategoryOptions = () => {
     const category = document.getElementById("category");
     const material = document.getElementById("material");
     if (!category || !material) return;
 
-    const distinctCategories = [...new Set(categories.map(getMaterialCategory).filter(name => name))];
-
-    category.innerHTML = `<option value="" selected disabled>Select Material</option>` +
-        distinctCategories.map(name => `<option value="${name}">${name}</option>`).join("");
-    material.innerHTML = `<option value="" selected disabled>Select Material</option>`;
-
     category.addEventListener("change", function() {
         const selectedCategory = this.value;
-        if (selectedCategory) {
-            const filteredMaterials = categories
-                .filter(item => getMaterialCategory(item) === selectedCategory)
-                .map(item => `<option value="${item.id}">${item.material}</option>`)
-                .join("");
-            material.innerHTML = `<option value="" selected disabled>Select Material</option>` + filteredMaterials;
-        } else {
-            material.innerHTML = `<option value="" selected disabled>Select Material</option>`;
-        }
+        const filteredVariants = categories.filter(variant => {
+            const catId = variant.material?.category?.id || variant.category?.id || variant.categoryid?.id;
+            return String(catId) === String(selectedCategory);
+        });
+
+        const options = filteredVariants.map(variant => {
+            const matName = variant.material ? variant.material.material : (variant.name || `Material ${variant.id}`);
+            const specs = [];
+            if (variant.gsm) specs.push(`${variant.gsm} GSM`);
+            if (variant.width && variant.height) specs.push(`${variant.width}x${variant.height} mm`);
+            const specText = specs.length > 0 ? `${matName} (${specs.join(', ')})` : matName;
+            return `<option value="${variant.id}">${specText}</option>`;
+        }).join("");
+
+        material.innerHTML = `<option value="" selected disabled>Select Material</option>` + options;
     });
 }
+
 // Default open tab (optional, can also be handled by HTML style="display:block")
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelector(".tab-btn").click();
@@ -279,27 +333,67 @@ const updateSupplier = (id) => {
     isUpdate = true;
     const modalEl = document.getElementById("addSupplierModal");
     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+    const modalTitle = modalEl.querySelector(".modal-title");
+    if (modalTitle) modalTitle.textContent = "Edit Supplier";
+    const submitBtn = modalEl.querySelector("button[type='submit']");
+    if (submitBtn) submitBtn.textContent = "Update Supplier";
+
     modal.show();
 
     // Reset form first to clear old data
-    document.getElementById("supplierForm").reset();
+    const form = document.getElementById("supplierForm");
+    if (form) form.reset();
 
     getHTTPService(`/supplier/getsupplier/${id}`, "GET", "json").then((response) => {
         console.log(response);
-        document.getElementById("companyname").value = response.companyname;
-        document.getElementById("email").value = response.email;
-        document.getElementById("contact").value = response.contact;
-        document.getElementById("address").value = response.address;
-        document.getElementById("contactperson").value = response.contactperson;
-        document.getElementById("status").value = response.status;
+        if (document.getElementById("companyname")) document.getElementById("companyname").value = response.companyname || "";
+        if (document.getElementById("email")) document.getElementById("email").value = response.email || "";
+        if (document.getElementById("contact")) document.getElementById("contact").value = response.contact || "";
+        if (document.getElementById("address")) document.getElementById("address").value = response.address || "";
+        if (document.getElementById("contactperson")) document.getElementById("contactperson").value = response.contactperson || "";
+        if (document.getElementById("status")) document.getElementById("status").value = response.status || "Active";
+        if (document.getElementById("description")) document.getElementById("description").value = response.description || "";
         const checkBox = document.querySelectorAll('input[name="category"]');
         checkBox.forEach((checkbox) => {
-            checkbox.checked = response.category && response.category.some(m => m.id === parseInt(checkbox.value));
+            checkbox.checked = response.category && response.category.some(m => Number(m.id) === parseInt(checkbox.value, 10));
         });
-
+    }).catch((error) => {
+        console.log(error);
     });
-
 }
+
+const deleteSupplier = (id) => {
+    swal.fire({
+        icon: "warning",
+        title: "Delete Supplier",
+        text: "Are you sure you want to delete this supplier? This action cannot be undone.",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+
+        getHTTPService(`/supplier/delete/${id}`, "DELETE", "json")
+            .then((response) => {
+                swal.fire({
+                    icon: "success",
+                    title: "Deleted!",
+                    text: response.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => window.location.reload());
+            })
+            .catch((error) => {
+                swal.fire({
+                    icon: "error",
+                    title: "Unable to delete supplier",
+                    text: error?.message || "Please try again."
+                });
+            });
+    });
+};
 
 let selectedPrSuppliers = [];
 
@@ -360,15 +454,17 @@ const submitPriceRequest = (evt) => {
         return;
     }
 
-    const material = document.getElementById("prMaterial").value;
-    const itemName = document.getElementById("prItemName").value;
+    const categoryElem = document.getElementById("category");
+    const materialElem = document.getElementById("material");
+    const categoryName = categoryElem && categoryElem.selectedIndex >= 0 ? categoryElem.options[categoryElem.selectedIndex].text : "";
+    const itemName = materialElem && materialElem.selectedIndex >= 0 ? materialElem.options[materialElem.selectedIndex].text : "";
     const quantity = document.getElementById("prQuantity").value;
     const deadline = document.getElementById("prDeadline").value;
     const message = document.getElementById("prMessage").value;
 
     const requestData = {
         supplierlist: selectedPrSuppliers.map(s => ({ id: parseInt(s.id) })),
-        materialcategory: material,
+        materialcategory: categoryName,
         itemSpecification: itemName,
         quantity: quantity,
         deadline: deadline,
@@ -646,6 +742,8 @@ const loadPurchaseOrders = () => {
         } else {
             tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No Purchase Orders found.</td></tr>';
         }
+
+        document.getElementById("searchPayment")?.dispatchEvent(new Event("input"));
     }).catch(error => {
         console.error("Error loading purchase orders:", error);
     });
@@ -865,12 +963,13 @@ const openSendQuotationModal = (priceRequestId) => {
     document.getElementById("sendQuotationForm").reset();
     document.getElementById("sqTotalAmount").value = "";
     document.getElementById("sqPriceRequestId").value = priceRequestId;
-    
-    // Fetch price request details to get the list of suppliers sent to
-    getHTTPService(`/supplier/pricerequest/${priceRequestId}`, 'GET', 'json').then((pr) => {
+
+    Promise.all([
+        getHTTPService(`/supplier/pricerequest/${priceRequestId}`, 'GET', 'json'),
+        getHTTPService(`/supplier/pricerequest/${priceRequestId}/matching-suppliers`, 'GET', 'json')
+    ]).then(([pr, suppliers]) => {
         document.getElementById("sqPriceRequestDisplay").value = `PR-${pr.id} - ${pr.materialcategory} (${pr.itemSpecification})`;
-        
-        // Extract numeric quantity if possible
+
         let parsedQty = "";
         if (pr.quantity) {
             const match = pr.quantity.match(/\d+/);
@@ -882,16 +981,23 @@ const openSendQuotationModal = (priceRequestId) => {
 
         const supplierSelect = document.getElementById("sqSupplierSelect");
         supplierSelect.innerHTML = '<option value="" selected disabled>Choose Supplier</option>';
-        
-        if (pr.supplierlist && pr.supplierlist.length > 0) {
-            pr.supplierlist.forEach(supplier => {
+
+        if (Array.isArray(suppliers) && suppliers.length > 0) {
+            suppliers.forEach(supplier => {
                 const option = document.createElement("option");
                 option.value = supplier.id;
                 option.textContent = supplier.companyname;
                 supplierSelect.appendChild(option);
             });
+        } else {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No matching suppliers found";
+            option.disabled = true;
+            option.selected = true;
+            supplierSelect.appendChild(option);
         }
-        
+
         const modalEl = document.getElementById("sendQuotationModal");
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
@@ -969,5 +1075,3 @@ const submitSupplierQuotation = (evt) => {
         }
     });
 };
-
-

@@ -6,10 +6,10 @@
 }
 
 body {
-    background: linear-gradient(180deg, #ECE9E6 0%, #FFFFFF 100%);
+    background-color: #f5f5f5;
     min-height: 100vh;
     font-family: 'Inter', sans-serif;
-    color: #333;
+    color: #1A1A1A;
 }
 
 /* Navbar */
@@ -18,6 +18,7 @@ body {
 }
 
 h2 {
+    font-family: 'Outfit', sans-serif;
     font-weight: 700;
     color: #FFFFFF;
     display: flex;
@@ -40,9 +41,10 @@ h2 {
 }
 
 .form-card {
-    background-color: #FFFFFF;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     padding: 40px;
     max-width: 800px;
     width: 100%;
@@ -56,6 +58,7 @@ h2 {
 }
 
 .form-header h3 {
+    font-family: 'Outfit', sans-serif;
     font-size: 28px;
     font-weight: 700;
     color: #1A1A1A;
@@ -64,7 +67,7 @@ h2 {
 
 .form-subtitle {
     font-size: 14px;
-    color: #666666;
+    color: #64748b;
     font-weight: 500;
 }
 
@@ -107,7 +110,7 @@ h2 {
     position: absolute;
     left: 12px;
     font-weight: 600;
-    color: #00AEEF;
+    color: #6366f1;
     font-size: 14px;
 }
 
@@ -116,8 +119,8 @@ h2 {
 }
 
 .form-control {
-    border: 1px solid #ccc;
-    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
     padding: 12px 16px;
     font-size: 14px;
     font-family: 'Inter', sans-serif;
@@ -127,9 +130,9 @@ h2 {
 }
 
 .form-control:focus {
-    border-color: #00AEEF;
+    border-color: #6366f1;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(0, 174, 239, 0.1);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
 .form-control::placeholder {
@@ -150,11 +153,11 @@ h2 {
 }
 
 .btn-primary-custom {
-    background: linear-gradient(135deg, #00AEEF 0%, #0088cc 100%);
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     color: #FFFFFF;
     border: none;
     padding: 12px 32px;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -162,13 +165,13 @@ h2 {
     display: flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.3);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .btn-primary-custom:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 174, 239, 0.4);
-    background: linear-gradient(135deg, #0088cc 0%, #006fa3 100%);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+    opacity: 0.9;
     color: #FFFFFF;
 }
 

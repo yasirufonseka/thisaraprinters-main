@@ -8,10 +8,7 @@ import com.example.thisaraprinters.repository.DesignationRepo;
 import com.example.thisaraprinters.repository.EmployeeRepo;
 import com.example.thisaraprinters.repository.UserRepo;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.crypto.password4j.BcryptPassword4jPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,15 +23,13 @@ public class EmployeeService {
     private final EmployeeRepo employeeRepo;
     private final UserRepo userRepo;
     private final DesignationRepo designationRepo;
-    @Autowired
-   // private PasswordEncoder passwordEncoder;
- //PasswordEncoder passwordEncoder
+    private final PasswordEncoder passwordEncoder;
 
-    public EmployeeService(EmployeeRepo employeeRepo, UserRepo userRepo, DesignationRepo designationRepo) {
+    public EmployeeService(EmployeeRepo employeeRepo, UserRepo userRepo, DesignationRepo designationRepo, PasswordEncoder passwordEncoder) {
         this.employeeRepo = employeeRepo;
         this.userRepo = userRepo;
         this.designationRepo = designationRepo;
-      //  this.passwordEncoder = passwordEncoder;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -68,7 +63,7 @@ public class EmployeeService {
                 // save user info for user table to create system user profile for the employee
                 UserModel newUser = new UserModel();
                 newUser.setUsername(employee.getEmail());
-              //  newUser.setPassword(passwordEncoder.encode(employee.getNic())); // Set initial password as NIC (hashed)
+                newUser.setPassword(passwordEncoder.encode(employee.getNic())); // Set initial password as NIC (hashed)
                 newUser.setAddeddate(LocalDate.now());
                 newUser.setUpdateddate(null);
                 newUser.setNote("User created by system");

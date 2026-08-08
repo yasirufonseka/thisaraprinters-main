@@ -36,10 +36,12 @@ public class PaymentController {
         ModelAndView mav = new ModelAndView("payment");
         // Pass quotations list so the customer payments tab can show all records
         mav.addObject("quotations", paymentService.getAllQuotations());
+        mav.addObject("productions",paymentService.getAllProductions());
+        mav.addObject("payments", paymentService.getAllSupplierPayments());
         return mav;
     }
 
-    // ─── Supplier Payment Endpoints ────────────────────────────────────────────
+    // Supplier Payment Endpoints
 
     @GetMapping("/supplier-orders")
     @ResponseBody

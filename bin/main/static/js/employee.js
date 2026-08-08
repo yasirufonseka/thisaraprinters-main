@@ -237,6 +237,7 @@ const updateEmployee = (id) => {
     document.getElementById("emgpersonname").value = emp.emgpersonname || "";
     document.getElementById("emgpersonphonenumber").value = emp.emgpersonphonenumber || "";
     document.querySelector(`input[name="gender"][value="${emp.gender}"]`).checked = true;
+    console.log(emp.gender);
     document.querySelector(`textarea[name='address']`).value = emp.address;
     if (emp.designationid && emp.designationid.id) {
         const desigSelect = document.querySelector(`select[name="designationid"]`);
@@ -294,9 +295,24 @@ const employeeFormDataListener = (event) => {
     event.preventDefault();
 
    const imageFile = document.getElementById("imageInput").files[0];
-   const imageSize = imageFile.size;
-   console.log("image siz"+" "+ imageSize/1024/1024+" MB");
-   
+  if(imageFile){
+    const imageSize = imageFile.size;
+    console.log("image size",imageSize);
+    const maxSize = 5;
+
+    if(imageSize/1024/1024 > maxSize){
+         swal.fire({
+                title: "Error",
+                text: `Image must be smaller than ${maxSize} MB.`,
+                icon: "error",
+                confirmButtonText: "OK"
+            });
+            return;
+        }
+    } else {
+        console.log("No new image selected, keeping existing image.");
+    }
+
     if (!validateEmptyFormData()) {
         return;
     }

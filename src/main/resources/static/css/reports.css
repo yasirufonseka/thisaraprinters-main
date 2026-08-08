@@ -4,6 +4,10 @@
     background-color: #1A1A1A !important;
 }
 
+        .report-selector > [class*="col-"] {
+            display: flex;
+        }
+
         .report-card {
             background: var(--bg-card, #fff);
             border-radius: 16px;
@@ -11,6 +15,8 @@
             padding: 20px 24px;
             cursor: pointer;
             transition: all 0.2s ease;
+            width: 100%;
+            height: 100%;
         }
 
         .report-card:hover {

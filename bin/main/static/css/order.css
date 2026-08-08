@@ -1,6 +1,6 @@
 /* Container ekata background ekak */
 .tab-container {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Inter', sans-serif;
   margin: 20px;
 }
 
@@ -14,8 +14,7 @@
   padding: 10px 25px;
   cursor: pointer;
   border: none;
-  background-color: #1B263B;
-  /* Theme: Table Header Row / Dark Indigo Blue */
+  background-color: #1A1A1A;
   color: #FFFFFF;
   border-radius: 8px 8px 0 0;
   font-weight: 600;
@@ -24,10 +23,8 @@
 
 /* Click karala thiyena tab eka wenas karanna */
 .tab-btn.active {
-  background-color: #FFC107;
-  /* Theme: Add Employee Button / Golden Yellow */
-  color: #0D1B2A;
-  /* Theme: Top Navigation Bar / Midnight Blue */
+  background-color: #6366f1;
+  color: #FFFFFF;
   font-weight: 700;
 }
 
@@ -38,11 +35,9 @@
 /* Content area styling */
 .tab-content {
   display: none;
-  /* Mulinma hide karanawa */
   padding: 30px;
   border: 1px solid #dee2e6;
   background-color: #FFFFFF;
-  /* Theme: Table Rows / White */
   border-radius: 0 8px 8px 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
@@ -63,23 +58,21 @@
 }
 
 body {
-  /* Theme Option B: Main Page Background - Light Greyish Blue Gradient */
-  background: linear-gradient(180deg, #ECE9E6 0%, #FFFFFF 100%);
+  background-color: #f5f5f5;
   min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
+  font-family: 'Inter', sans-serif;
+  color: #1A1A1A;
 }
 
 /* Navbar */
 .top-navbar {
-  /* Theme Option B: Top Navigation Bar - Midnight Blue */
   background-color: #1A1A1A !important;
 }
 
 h2 {
+  font-family: 'Outfit', sans-serif;
   font-weight: 700;
   color: #FFFFFF;
-  /* Ensure text is white on dark navbar */
   display: flex;
   align-items: center;
   gap: 10px;
@@ -89,58 +82,56 @@ h2 {
 .btn-gold,
 .btn-teal,
 .btn-danger {
-  border-radius: 6px;
-  padding: 6px 16px;
+  border-radius: 10px;
+  padding: 8px 20px;
   transition: all 0.2s ease;
   font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .btn-teal {
   background-color: transparent !important;
-  border: 1px solid #17A2B8 !important;
-  color: #17A2B8 !important;
+  border: 1px solid #6366f1 !important;
+  color: #000000 !important;
 }
 
 .btn-teal:hover {
-  background-color: #17A2B8 !important;
+  background-color: #6366f1 !important;
   color: #FFFFFF !important;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
 }
 
 .btn-danger {
   background-color: transparent !important;
-  border: 1px solid #DC3545 !important;
-  color: #DC3545 !important;
+  border: 1px solid #ED008C !important;
+  color: #ED008C !important;
 }
 
 .btn-danger:hover {
-  background-color: #DC3545 !important;
+  background-color: #ED008C !important;
   color: #FFFFFF !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(237, 0, 140, 0.2);
 }
 
 .btn-gold {
   display: flex;
-
-  background-color: #078fff !important;
-  border: 2px solid #078fff !important;
-  border-radius: 16px;
-  color: #ffffff !important;
-  font-weight: 500;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 10px;
+  font-weight: 600;
   width: 35%;
   height: 50px;
-  
   transition: all 0.2s ease-in-out;
-  
 }
 
-.btn-gold:hover{
-  background-color: #36a2fa !important;
-  color: #f7f7f7 !important;
-  transition:all ease-in 0.2s;
-  box-shadow: 0 8px 10px rgba(233, 233, 233, 0.979);
+.btn-gold:hover {
+  opacity: 0.9 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 
@@ -656,9 +647,9 @@ h2 {
 }
 
 .searchBar:focus-within {
-    border: 1px solid #0d6efd;
-    outline: 1px solid rgba(13, 110, 253, 0.25);
-    box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.25);
+    border: 1px solid #6366f1;
+    outline: 1px solid rgba(99, 102, 241, 0.25);
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.25);
 }
 
 .searchInput::placeholder {

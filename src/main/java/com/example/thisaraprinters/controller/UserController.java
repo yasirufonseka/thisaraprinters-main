@@ -7,13 +7,11 @@ import org.springframework.web.servlet.ModelAndView;
 import com.example.thisaraprinters.dto.UserDto;
 import com.example.thisaraprinters.model.EmployeeModel;
 import com.example.thisaraprinters.model.UserModel;
-import com.example.thisaraprinters.model.Module;
 import com.example.thisaraprinters.service.UserService;
 
 import java.util.List;
 import java.util.Map;
 
-import org.apache.catalina.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
@@ -64,14 +62,14 @@ public class UserController {
         return ResponseEntity.status(200).body(userService.getUserById(id));
     }
 
+    @DeleteMapping("/delete/user/{id}")
+    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable("id") Integer id) {
+        return ResponseEntity.status(200).body(Map.of("message", userService.deleteUser(id)));
+    }
+
     @GetMapping("/getuser/roles")
     @ResponseBody
     public ResponseEntity<List<RoleModel>> getRoles() {
         return ResponseEntity.status(200).body(userService.getRoles());
-    }
-
-    @GetMapping("/getmodule")
-    public ResponseEntity<List<Module>> getModules() {
-        return ResponseEntity.status(200).body(userService.getAllModules());
     }
 }

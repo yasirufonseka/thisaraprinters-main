@@ -6,3 +6,8 @@
 # Gradle
 /.gradle
 /build
+.gradle/
+.gradle-cache/
+.gradle-user-home/
+build/
+out/

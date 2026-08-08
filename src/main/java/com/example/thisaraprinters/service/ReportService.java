@@ -13,6 +13,73 @@ import java.util.stream.Collectors;
 @Service
 public class ReportService {
 
+    /** Applies optional, report-specific filters after the report data is assembled and refreshes its summary values. */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> applyFiltersAndRecalculate(String reportType, Map<String, Object> result,
+                                                            Map<String, String> requestParameters) {
+        List<Map<String, Object>> rows = new ArrayList<>((List<Map<String, Object>>) result.getOrDefault("rows", List.of()));
+        Map<String, String> filters = requestParameters.entrySet().stream()
+                .filter(e -> !Set.of("start", "end").contains(e.getKey()) && e.getValue() != null && !e.getValue().isBlank())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        rows = rows.stream().filter(row -> filters.entrySet().stream().allMatch(filter ->
+                String.valueOf(row.getOrDefault(filter.getKey(), "")).toLowerCase(Locale.ROOT)
+                        .contains(filter.getValue().trim().toLowerCase(Locale.ROOT)))).collect(Collectors.toList());
+        result.put("rows", rows);
+
+        switch (reportType) {
+            case "sales" -> {
+                result.put("totalRevenue", sum(rows, "amount")); result.put("totalAdvance", sum(rows, "advanceAmount"));
+                result.put("totalOrders", rows.size()); result.put("pendingCount", count(rows, "status", "Pending"));
+                result.put("acceptedCount", rows.stream().filter(r -> value(r, "status").contains("approved")).count());
+                result.put("byStatus", countBy(rows, "status"));
+            }
+            case "inventory" -> { result.put("totalLots", rows.size()); result.put("totalQty", sum(rows, "quantity")); result.put("belowReorderCount", rows.stream().filter(r -> Boolean.TRUE.equals(r.get("belowReorder"))).count()); }
+            case "grn" -> { result.put("totalGRNs", rows.size()); result.put("totalQtyReceived", sum(rows, "receivedQty")); }
+            case "purchase-orders" -> { result.put("totalOrders", rows.size()); result.put("totalPaid", sum(rows, "paidAmount")); result.put("unpaidCount", count(rows, "paymentStatus", "Unpaid")); result.put("byPaymentStatus", countBy(rows, "paymentStatus")); }
+            case "production" -> { result.put("totalJobs", rows.size()); result.put("overdueCount", rows.stream().filter(r -> r.get("daysRemaining") instanceof Number n && n.longValue() < 0).count()); result.put("byStatus", countBy(rows, "status")); result.put("byPriority", countBy(rows, "priority")); }
+            case "supplier-price" -> result.put("totalReplies", rows.size());
+        }
+        return result;
+    }
+
+    private double sum(List<Map<String, Object>> rows, String field) { return rows.stream().mapToDouble(r -> r.get(field) instanceof Number n ? n.doubleValue() : 0).sum(); }
+    private long count(List<Map<String, Object>> rows, String field, String expected) { return rows.stream().filter(r -> expected.equalsIgnoreCase(String.valueOf(r.get(field)))).count(); }
+    private String value(Map<String, Object> row, String field) { return String.valueOf(row.getOrDefault(field, "")).toLowerCase(Locale.ROOT); }
+    private Map<String, Long> countBy(List<Map<String, Object>> rows, String field) { return rows.stream().collect(Collectors.groupingBy(r -> String.valueOf(r.getOrDefault(field, "Unknown")), LinkedHashMap::new, Collectors.counting())); }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, List<String>> getFilterOptions(String reportType, LocalDate start, LocalDate end) {
+        Map<String, Object> report = switch (reportType) {
+            case "sales" -> getSalesReport(start, end);
+            case "inventory" -> getInventoryReport(start, end);
+            case "grn" -> getGrnReport(start, end);
+            case "purchase-orders" -> getPurchaseOrderReport(start, end);
+            case "production" -> getProductionReport(start, end);
+            case "supplier-price" -> getSupplierPriceReport(start, end);
+            default -> throw new IllegalArgumentException("Unsupported report type");
+        };
+        List<Map<String, Object>> rows = (List<Map<String, Object>>) report.getOrDefault("rows", List.of());
+        Map<String, List<String>> options = new LinkedHashMap<>();
+        for (String field : filterFields(reportType)) {
+            options.put(field, rows.stream().map(r -> String.valueOf(r.getOrDefault(field, "")))
+                    .filter(value -> !value.isBlank() && !"-".equals(value))
+                    .distinct().sorted(String.CASE_INSENSITIVE_ORDER).collect(Collectors.toList()));
+        }
+        return options;
+    }
+
+    private List<String> filterFields(String reportType) {
+        return switch (reportType) {
+            case "sales" -> List.of("customer", "status");
+            case "inventory" -> List.of("variant", "lotType", "status");
+            case "grn" -> List.of("supplier", "material", "variant", "batchNo", "receivedBy");
+            case "purchase-orders" -> List.of("supplier", "paymentStatus");
+            case "production" -> List.of("customer", "status", "priority");
+            case "supplier-price" -> List.of("supplier", "material");
+            default -> List.of();
+        };
+    }
+
     private final QuotationRepo quotationRepo;
     private final InventoryRepository inventoryRepository;
     private final PurchaseOrderRepo purchaseOrderRepo;
@@ -196,6 +263,8 @@ public class ReportService {
                 }
             }
             row.put("material", materialStr);
+            row.put("variant", materialStr);
+            row.put("receivedBy", i.getReceivedByUser() != null ? i.getReceivedByUser().getUsername() : "-");
             row.put("receivedQty", i.getReceivedQuantity() != null ? i.getReceivedQuantity() : "-");
             row.put("units", i.getUnits() != null ? i.getUnits() : "-");
             row.put("notes", i.getNotes() != null ? i.getNotes() : "-");
@@ -255,12 +324,8 @@ public class ReportService {
 
      //production status report
     public Map<String, Object> getProductionReport(LocalDate start, LocalDate end) {
-        List<ProductionModel> byDeadline = productionRepo.findByDeadlineBetween(start, end);
-        List<ProductionModel> noDeadline = productionRepo.findAll().stream()
-                .filter(j -> j.getDeadline() == null)
-                .collect(Collectors.toList());
-        List<ProductionModel> jobs = new ArrayList<>(byDeadline);
-        if (byDeadline.isEmpty()) jobs.addAll(noDeadline);
+        // A production report is scoped by when work entered production; deadline is only for urgency.
+        List<ProductionModel> jobs = productionRepo.findByDateSentToProductionBetween(start, end);
 
         LocalDate today = LocalDate.now();
         long overdueCount = jobs.stream()

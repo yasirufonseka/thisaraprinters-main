@@ -5,16 +5,13 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.example.thisaraprinters.repository.ModuleRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.thisaraprinters.dto.UserDto;
 import com.example.thisaraprinters.model.EmployeeModel;
 import com.example.thisaraprinters.model.RoleModel;
 import com.example.thisaraprinters.model.UserModel;
-import com.example.thisaraprinters.model.Module;
 import com.example.thisaraprinters.repository.RoleRepo;
 import com.example.thisaraprinters.repository.UserRepo;
 
@@ -24,19 +21,13 @@ public class UserService {
     private final EmployeeRepo employeeRepo;
     private final UserRepo userRepo;
     private final RoleRepo roleRepo;
-    private final ModuleRepo moduleRepo;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-   // private BCryptPasswordEncoder passwordEncoder;
-//BCryptPasswordEncoder passwordEncoder
-
-    public UserService(UserRepo userRepo, RoleRepo roleRepo, EmployeeRepo employeeRepo,ModuleRepo moduleRepo) {
+    public UserService(UserRepo userRepo, RoleRepo roleRepo, EmployeeRepo employeeRepo, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.roleRepo = roleRepo;
         this.employeeRepo = employeeRepo;
-        this.moduleRepo = moduleRepo;
-        //this.passwordEncoder = passwordEncoder;
-
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<UserModel> getAllUsers() {
@@ -50,7 +41,7 @@ public class UserService {
             newUser.setEmployeeid(employeeRepo.findById(user.getEmployeeid()).orElse(null));
         }
         newUser.setUsername(user.getUsername());
-      //  newUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        newUser.setPassword(passwordEncoder.encode(user.getPassword()));
         newUser.setNote(user.getNote());
         
         if (user.getRoleId() != null) {
@@ -89,7 +80,10 @@ public class UserService {
         else{       
             existingUser.setEmployeeid(employeeRepo.findById(user.getEmployeeid()).orElse(null));
             existingUser.setUsername(user.getUsername());
-           // existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+            // Only update password if a new one was actually provided
+            if (user.getPassword() != null && !user.getPassword().isBlank()) {
+                existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+            }
             existingUser.setNote(user.getNote());
             existingUser.setStatus(user.getStatus());
             existingUser.setUserphoto(user.getUserphoto());
@@ -113,12 +107,13 @@ public class UserService {
 
     public List<RoleModel> getRoles(){
         return roleRepo.findAll();
-    };
-
-    public List<Module> getAllModules() {
-        List<Module> modules = moduleRepo.findAll();
-        return modules;
     }
 
+    public String deleteUser(Integer id) {
+        UserModel user = userRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        userRepo.delete(user);
+        return "User deleted successfully";
+    }
 
 }

@@ -19,6 +19,25 @@ $(document).ready(function () {
     // Load privilege table
     loadPrivilegeTable();
 });
+
+const filterTableByText = (tableSelector, query) => {
+    document.querySelectorAll(`${tableSelector} tbody tr`).forEach((row) => {
+        if (row.cells.length === 1) return;
+        row.style.display = !query || row.textContent.toLowerCase().includes(query) ? "" : "none";
+    });
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+    const userSearch = document.getElementById("searchUser");
+    const privilegeSearch = document.getElementById("searchPrivilege");
+
+    userSearch?.addEventListener("input", () => {
+        filterTableByText(".userTable", userSearch.value.trim().toLowerCase());
+    });
+    privilegeSearch?.addEventListener("input", () => {
+        filterTableByText(".privilegeTable", privilegeSearch.value.trim().toLowerCase());
+    });
+});
 // Default open tab
 document.addEventListener("DOMContentLoaded", function () {
     var defaultBtn = document.querySelector(".tab-btn");
@@ -189,7 +208,7 @@ const submitUser = (evt) => {
             confirmButtonText: "Yes, update it!"
         }).then((result) => {
             if (result.isConfirmed) {
-                postHTTPService(`update/user/${user?.id}`, "PUT", "json", convertUserFormData)
+                postHTTPService(`/user/update/user/${user?.id}`, "PUT", "json", convertUserFormData)
                     .then((response) => {
                         Swal.mixin({
                             toast: true,
@@ -285,6 +304,39 @@ const updateUser = (userid) => {
     });
 }
 
+const deleteUser = (userid) => {
+    Swal.fire({
+        icon: "warning",
+        title: "Confirm Delete",
+        text: "Are you sure you want to delete this user?",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            postHTTPService(`/user/delete/user/${userid}`, "DELETE", "json").then((response) => {
+                Swal.fire({
+                    icon: "success",
+                    title: "User deleted",
+                    text: response.message,
+                    timer: 1500,
+                    showConfirmButton: false,
+                }).then(() => {
+                    window.location.reload();
+                });
+            }).catch((error) => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error deleting user",
+                    text: error.message
+                });
+            });
+        }
+    });
+}
+
+
 const resetForm = () => {
     window.location.reload();
     if (document.activeElement) {
@@ -338,6 +390,7 @@ const renderModulePrivilegeGrid = () => {
     if (!tbody) return;
     tbody.innerHTML = "";
     allModules.forEach((moduleName) => {
+        const isReport = moduleName === 'Report';
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td>
@@ -352,6 +405,7 @@ const renderModulePrivilegeGrid = () => {
                         <input class="form-check-input perm-chk" type="checkbox" value="View" id="view_${moduleName}" disabled>
                         <label class="form-check-label" for="view_${moduleName}">View</label>
                     </div>
+                    ${isReport ? '' : `
                     <div class="form-check">
                         <input class="form-check-input perm-chk" type="checkbox" value="Insert" id="insert_${moduleName}" disabled>
                         <label class="form-check-label" for="insert_${moduleName}">Insert</label>
@@ -364,6 +418,7 @@ const renderModulePrivilegeGrid = () => {
                         <input class="form-check-input perm-chk" type="checkbox" value="Delete" id="delete_${moduleName}" disabled>
                         <label class="form-check-label" for="delete_${moduleName}">Delete</label>
                     </div>
+                    `}
                 </div>
             </td>
         `;
@@ -418,6 +473,7 @@ const loadPrivilegeTable = () => {
             `;
             tableBody.appendChild(tr);
         });
+        document.getElementById("searchPrivilege")?.dispatchEvent(new Event("input"));
     }).catch((error) => {
         console.error("Error loading privilege table:", error);
     });
@@ -437,10 +493,15 @@ const editPrivilege = (roleId) => {
                 chkModule.checked = true;
                 toggleModuleRow(moduleName);
                 
-                document.getElementById(`view_${moduleName}`).checked = priv.canView;
-                document.getElementById(`insert_${moduleName}`).checked = priv.canInsert;
-                document.getElementById(`update_${moduleName}`).checked = priv.canUpdate;
-                document.getElementById(`delete_${moduleName}`).checked = priv.canDelete;
+                const viewEl = document.getElementById(`view_${moduleName}`);
+                const insertEl = document.getElementById(`insert_${moduleName}`);
+                const updateEl = document.getElementById(`update_${moduleName}`);
+                const deleteEl = document.getElementById(`delete_${moduleName}`);
+                
+                if (viewEl) viewEl.checked = priv.canView;
+                if (insertEl) insertEl.checked = priv.canInsert;
+                if (updateEl) updateEl.checked = priv.canUpdate;
+                if (deleteEl) deleteEl.checked = priv.canDelete;
             }
         });
         
@@ -500,12 +561,16 @@ const submitPrivilege = (evt) => {
     allModules.forEach((moduleName) => {
         const isChecked = document.getElementById(`chk_${moduleName}`);
         if (isChecked && isChecked.checked) {
+            const viewInput = document.getElementById(`view_${moduleName}`);
+            const insertInput = document.getElementById(`insert_${moduleName}`);
+            const updateInput = document.getElementById(`update_${moduleName}`);
+            const deleteInput = document.getElementById(`delete_${moduleName}`);
             privilegeDtos.push({
                 module: moduleName,
-                canView: document.getElementById(`view_${moduleName}`).checked,
-                canInsert: document.getElementById(`insert_${moduleName}`).checked,
-                canUpdate: document.getElementById(`update_${moduleName}`).checked,
-                canDelete: document.getElementById(`delete_${moduleName}`).checked
+                canView: viewInput ? viewInput.checked : false,
+                canInsert: insertInput ? insertInput.checked : false,
+                canUpdate: updateInput ? updateInput.checked : false,
+                canDelete: deleteInput ? deleteInput.checked : false
             });
         }
     });

@@ -29,7 +29,7 @@ function submitMaterial(event) {
        // availablequantity: parseInt(document.getElementById('materialQuantity').value),
         units: document.getElementById('materialUnit').value,
         reorderlevel: parseInt(document.getElementById('reorderlevel').value),
-        status: document.getElementById('materialStatus').value
+       // status: document.getElementById('materialStatus').value
     };
 
     const response = postHTTPService('/inventory/api/materials/add', 'POST', 'json', formData);
@@ -160,7 +160,7 @@ function deleteMaterial(materialId) {
     });
 }
 
-// ─── Helpers to pop an error message under any input field ────────────────────
+//  Helpers to pop an error message under any input field 
 function showFieldError(inputId, message) {
     const input = document.getElementById(inputId);
     if (!input) return;
@@ -177,7 +177,7 @@ function clearFieldError(inputId) {
     if (errorDiv) errorDiv.textContent = "";
 }
 
-// ─── Wire up blur listeners for the GRN modal fields ─────────────────────────
+//  Wire up blur listeners for the GRN modal fields 
 document.addEventListener("DOMContentLoaded", function () {
     const grnTextFields = [
         { id: "grnSupplierInvoice", label: "Invoice number" },
@@ -223,7 +223,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-// ─── GRN validation — check required fields before we hit the API ─────────────
+//  GRN validation — check required fields before we hit the API 
 function validateGRNForm() {
     let isValid = true;
 
@@ -254,7 +254,7 @@ function validateGRNForm() {
     return isValid;
 }
 
-// ─── Usage form validation ────────────────────────────────────────────────────
+//  Usage form validation 
 function validateUsageForm() {
     let isValid = true;
 
@@ -277,11 +277,11 @@ function validateUsageForm() {
     return isValid;
 }
 
-// Submit GRN Form — handles both Add and Edit
+// Submit GRN Form  handles  Add and Edit
 function submitGRN(event) {
     event.preventDefault();
 
-    // Make sure the required fields are filled in before we do anything
+    
     if (!validateGRNForm()) return;
 
     const selectedItem = $('#grnItem').find(':selected');
@@ -347,29 +347,20 @@ function submitUsage(event) {
         dateUsed: document.getElementById('usageDate').value
     };
 
-    const response = postHTTPService('/inventory/api/materials/usage', 'POST', 'json', usageData);
-
-    if (response.responseText && response.responseText.includes('Error')) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: 'Failed to record usage. Please try again.'
-        });
-    } else {
+    postHTTPService('/inventory/api/materials/usage', 'POST', 'json', usageData).then((response) => {
         Swal.fire({
             icon: 'success',
             title: 'Usage Recorded!',
-            text: 'Material usage has been recorded successfully.',
+            text: response.message || 'Material usage has been recorded successfully.',
             timer: 2000,
             timerProgressBar: true,
             willClose: () => {
                 location.reload();
             }
         });
-    }
-
-    const modal = bootstrap.Modal.getInstance(document.getElementById('usageModal'));
-    if (modal) modal.hide();
+        const modal = bootstrap.Modal.getInstance(document.getElementById('usageModal'));
+        if (modal) modal.hide();
+    }).catch((error) => Swal.fire({ icon: 'error', title: 'Error!', text: error.responseJSON?.message || 'Failed to record usage.' }));
 }
 
 // Search functionality
@@ -455,6 +446,11 @@ $(document).ready(function () {
         document.getElementById('usageDate').value = today;
     });
 
+    // Load ongoing production jobs when Usage modal opens
+    $('#usageModal').on('show.bs.modal', function () {
+        loadOngoingProductionJobs();
+    });
+
     // Reset Return Stock form when modal is closed
     $('#returnStockModal').on('hidden.bs.modal', function () {
         document.getElementById('returnStockFormData').reset();
@@ -529,16 +525,28 @@ function populateCategory() {
 }
 
 const materialCategoryElement = document.getElementById("materialCategory");
+const materialCategory = document.getElementById("materialCategory");
+const height = document.getElementById("heightContainer");
+const width = document.getElementById("widthContainer");
+const weidth = document.getElementById("weidthContainer");
+const gsm = document.getElementById("materialGsmContainer");
+const sheetPerReam = document.getElementById("sheetPerReamContainer");
+const materialGsmInput = document.getElementById("materialgsm");
+const sheetPerReamInput = document.getElementById("sheetperream");
+const heightInput = document.getElementById("heightOfPaper");
+const widthInput = document.getElementById("widthOfPaper");
+const weightInput = document.getElementById("weight");
+
+//hide the div
+height.classList.add("d-none");
+width.classList.add("d-none");
+weidth.classList.add("d-none");
+gsm.classList.add("d-none");
+sheetPerReam.classList.add("d-none");
+
 if (materialCategoryElement) {
     materialCategoryElement.addEventListener("change", function (event) {
-        const materialCategory = document.getElementById("materialCategory");
-        const hight = document.getElementById("hightContainer");
-        const width = document.getElementById("widthContainer");
-        const weidth = document.getElementById("weidthContainer");
-    //hide the div
-    hight.classList.add("d-none");
-    width.classList.add("d-none");
-    weidth.classList.add("d-none");
+
 
     const selectedOption = materialCategory.options[materialCategory.selectedIndex].text;
     const autoUnit = getUnitForCategory(selectedOption);
@@ -547,21 +555,39 @@ if (materialCategoryElement) {
     }
 
     if(selectedOption === "Paper") {
-        hight.classList.add("d-inline");
+        height.classList.add("d-inline");
         width.classList.add("d-inline");
+        gsm.classList.add("d-inline");
+        sheetPerReam.classList.add("d-inline");
         weidth.classList.remove("d-inline");
-        
-        hight.classList.remove("d-none");
+
+        height.classList.remove("d-none");
         width.classList.remove("d-none");
+        gsm.classList.remove("d-none");
+        sheetPerReam.classList.remove("d-none");
         weidth.classList.add("d-none");
+        materialGsmInput.required = true;
+        sheetPerReamInput.required = true;
+        heightInput.required = true;
+        widthInput.required = true;
+        weightInput.required = false;
     } else {
-        hight.classList.remove("d-inline");
+        height.classList.remove("d-inline");
         width.classList.remove("d-inline");
+        gsm.classList.remove("d-inline");
+        sheetPerReam.classList.remove("d-inline");
         weidth.classList.add("d-inline");
         
-        hight.classList.add("d-none");
+        height.classList.add("d-none");
         width.classList.add("d-none");
+        gsm.classList.add("d-none");
+        sheetPerReam.classList.add("d-none");
         weidth.classList.remove("d-none");
+        materialGsmInput.required = false;
+        sheetPerReamInput.required = false;
+        heightInput.required = false;
+        widthInput.required = false;
+        weightInput.required = true;
     }
 
 });
@@ -570,10 +596,13 @@ if (materialCategoryElement) {
 function populateMaterial() {
     // populate material dropdown when category changes
     const categorySelect = document.getElementById("materialCategory");
+
     if (categorySelect) {
         categorySelect.addEventListener("change", function () {
             // Capture selectedCategory HERE before entering any callback
             const selectedCategory = parseInt(this.value);
+            const addNewMaterialContainer = document.getElementById('addNewMaterial');
+            addNewMaterialContainer.innerHTML = '';
             getHTTPService("/inventory/get/materials", "GET", "json")
                 .done(function (response) {
                     const materialSelect = document.getElementById("materialName");
@@ -599,23 +628,55 @@ function populateMaterial() {
                     console.error("Error loading materials");
                 });
         });
+    }
+}
 
+const materialNameSelect = document.getElementById("materialName");
+if (materialNameSelect) {
+    materialNameSelect.addEventListener('change', function() {
+        const addNewMaterialContainer = document.getElementById('addNewMaterial');
+        addNewMaterialContainer.innerHTML = '';
 
-    }}
+        if (this.value === 'custom') {
+            const newMaterialLabel = document.createElement('label');
+            const newMaterialInput = document.createElement('input');
+
+            newMaterialLabel.textContent = 'New Material Name';
+            newMaterialLabel.htmlFor = 'newMaterialName';
+            newMaterialLabel.classList.add('form-label', 'text-sm-left');
+
+            newMaterialInput.type = 'text';
+            newMaterialInput.classList.add('form-control');
+            newMaterialInput.id = 'newMaterialName';
+            newMaterialInput.name = 'newMaterialName';
+            newMaterialInput.placeholder = 'Enter material name';
+            newMaterialInput.required = true;
+
+            addNewMaterialContainer.append(newMaterialLabel, newMaterialInput);
+        }
+    });
+}
 
 function addMaterial(event) {
     if (event) event.preventDefault();
-    const materialIdValue = document.getElementById("materialName").value;
+    const materialIdValue = document.getElementById("materialName");
+    const selectedCategoryId = parseInt(document.getElementById("materialCategory").value);
+    const addNewMaterial = document.getElementById("newMaterialName");
+    // Capture whether the user chose "custom" before overwriting the select value
+    const isNewMaterial = materialIdValue.value === "custom";
     const formData = {
-        materialName : { id: parseInt(materialIdValue) },
+        category : { id: selectedCategoryId },
+        materialName : isNewMaterial ? null : { id: parseInt(materialIdValue.value) },
+        newMaterialName : isNewMaterial ? addNewMaterial.value.trim() : null,
         materialgsm : parseInt(document.getElementById("materialgsm").value) || 0,
         sheetperream : parseInt(document.getElementById("sheetperream").value) || 0,
         reorderlevel : parseInt(document.getElementById("reorderlevel").value) || 0,
-        hightofpaper : parseFloat(document.getElementById("hightofpaper").value) || 0,
-        widthtofpaper : parseFloat(document.getElementById("widthtofpaper").value) || 0,
+        hightMm : parseFloat(document.getElementById("heightOfPaper").value) || 0,
+        widthtMm : parseFloat(document.getElementById("widthOfPaper").value) || 0,
         weight : parseFloat(document.getElementById("weight").value) || 0,
         unit : document.getElementById("materialUnit").value
     }
+    console.log(formData);
 
     postHTTPService("/inventory/save/material","POST","json",formData).then((responce) => {
         swal.fire({
@@ -624,12 +685,15 @@ function addMaterial(event) {
             text: responce.message || 'Material added successfully!',
             confirmButtonText: 'OK',
 
+        }).then(() => {
+            window.location.reload();
         })
     }).catch((error) => {
+        const message = error.responseJSON?.message || error.responseText || error.message || 'Error occurred while saving.';
         swal.fire({
             title: 'Error!',
             icon: 'error',
-            text: error.message || 'Error occurred while saving.',
+            text: message,
             confirmButtonText: 'OK',
         })
         console.log(error);
@@ -824,4 +888,147 @@ function submitReturnStock(event) {
     }
 }
 
+// Open a professional print window for a single GRN
+function printGRN(grnId) {
+    getHTTPService('/inventory/api/grn/' + grnId, 'GET', 'json')
+        .done(function (data) {
+            const grnNumber = data.grnNumber || 'N/A';
+            const supplierName = data.supplierName || 'N/A';
+            const invoiceNo = data.supplierInvoiceNo || 'N/A';
+            const batchNo = data.batchNo || 'N/A';
+            const materialName = data.materialName || 'N/A';
+            const receivedQty = data.receivedQuantity || 0;
+            const unit = data.units || 'N/A';
+            const receivedDate = data.receivedDate || 'N/A';
+            const expiryDate = data.expiryDate || 'N/A';
+            const receivedBy = data.receivedByUsername || 'N/A';
+            const notes = data.notes || '—';
 
+            const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Goods Received Note - ${grnNumber}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; background: #fff; padding: 32px; font-size: 13px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1a1a2e; padding-bottom: 16px; margin-bottom: 20px; }
+    .company-name { font-size: 26px; font-weight: 800; color: #1a1a2e; letter-spacing: 1px; }
+    .grn-badge { background: #1a1a2e; color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 15px; font-weight: 700; text-align: right; }
+    .grn-badge small { display: block; font-size: 10px; font-weight: 400; color: #aaa; margin-bottom: 2px; }
+    .section { display: flex; gap: 24px; margin-bottom: 20px; }
+    .box { flex: 1; border: 1px solid #dde1ea; border-radius: 8px; padding: 14px 16px; }
+    .box h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: #888; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+    .row-item { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .row-item .label { color: #555; }
+    .row-item .value { font-weight: 600; }
+    .notes-box { width: 100%; border: 1px solid #dde1ea; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; }
+    .notes-box h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: #888; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+    .footer { display: flex; gap: 40px; margin-top: 40px; padding-top: 14px; border-top: 2px dashed #ccc; font-size: 11px; color: #555; }
+    .sig-line { flex: 1; }
+    .sig-line .line { border-top: 1px solid #999; margin-top: 40px; margin-bottom: 4px; }
+    @media print {
+      body { padding: 16px; }
+      button { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="company-name">Thisara Printers</div>
+      <div style="font-size: 11px; color: #555; margin-top: 2px;">Inventory & Stock Department</div>
+    </div>
+    <div class="grn-badge">
+      <small>Goods Received Note</small>
+      ${grnNumber}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="box">
+      <h4>Supplier & Delivery Information</h4>
+      <div class="row-item"><span class="label">Supplier</span><span class="value">${supplierName}</span></div>
+      <div class="row-item"><span class="label">Invoice No</span><span class="value">${invoiceNo}</span></div>
+      <div class="row-item"><span class="label">Batch Number</span><span class="value">${batchNo}</span></div>
+    </div>
+    <div class="box">
+      <h4>Receipt Details</h4>
+      <div class="row-item"><span class="label">Date Received</span><span class="value">${receivedDate}</span></div>
+      <div class="row-item"><span class="label">Expiry Date</span><span class="value">${expiryDate}</span></div>
+      <div class="row-item"><span class="label">Received By</span><span class="value">${receivedBy}</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="box">
+      <h4>Items Received</h4>
+      <div class="row-item"><span class="label">Material / Item</span><span class="value">${materialName}</span></div>
+      <div class="row-item"><span class="label">Quantity Received</span><span class="value" style="font-size: 15px; font-weight: 700; color: #1a1a2e;">${receivedQty} ${unit}</span></div>
+    </div>
+  </div>
+
+  <div class="notes-box">
+    <h4>Remarks / Notes</h4>
+    <div style="color: #444; font-style: italic; line-height: 1.5;">${notes}</div>
+  </div>
+
+  <div class="footer">
+    <div class="sig-line"><div class="line"></div>Storekeeper / Receiver Signature</div>
+    <div class="sig-line"><div class="line"></div>Manager / Authorized Signature</div>
+    <div style="flex:1.5; text-align:right; font-size:10px; color:#aaa; padding-top: 40px;">
+      Generated on ${new Date().toLocaleString()}<br>Thisara Printers – Stock Department
+    </div>
+  </div>
+
+  <script>window.onload = function() { window.print(); }<\/script>
+</body>
+</html>`;
+
+            const win = window.open('', '_blank', 'width=900,height=700');
+            if (win) {
+                win.document.write(html);
+                win.document.close();
+            } else {
+                alert('Pop-up blocked. Please allow pop-ups for this site to print Goods Received Notes.');
+            }
+        })
+        .fail(function () {
+            Swal.fire({ icon: 'error', title: 'Error!', text: 'Could not load GRN data for printing.' });
+        });
+}
+
+// Populate the Job ID dropdown with ongoing (non-dispatched) production jobs
+function loadOngoingProductionJobs() {
+    const select = document.getElementById('usageJob');
+    if (!select) return;
+
+    select.innerHTML = '<option value="" selected disabled>Loading jobs...</option>';
+
+    getHTTPService('/production/all', 'GET', 'json')
+        .done(function (data) {
+            select.innerHTML = '<option value="" selected disabled>Select Ongoing Production Job</option>';
+            if (Array.isArray(data) && data.length > 0) {
+                const ongoingJobs = data.filter(job => job.status !== 'Dispatched');
+                if (ongoingJobs.length === 0) {
+                    select.innerHTML += '<option value="" disabled>No ongoing production jobs found</option>';
+                    return;
+                }
+                ongoingJobs.forEach(function (job) {
+                    const opt = document.createElement('option');
+                    opt.value = job.orderId;
+                    const desc = job.description ? ' — ' + job.description.substring(0, 40) : '';
+                    opt.textContent = `${job.orderId} | ${job.customerName || 'N/A'}${desc}`;
+                    opt.setAttribute('data-status', job.status || '');
+                    select.appendChild(opt);
+                });
+            } else {
+                select.innerHTML += '<option value="" disabled>No production jobs found</option>';
+            }
+        })
+        .fail(function () {
+            select.innerHTML = '<option value="" selected disabled>Failed to load jobs</option>';
+            console.error('Failed to load ongoing production jobs.');
+        });
+}
