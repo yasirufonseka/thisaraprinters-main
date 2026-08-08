@@ -293,6 +293,34 @@ public class InventoryService {
 
         productionRepo.findByOrderId(dto.getJobNo().trim())
                 .orElseThrow(() -> new IllegalArgumentException("Production job not found."));
+
+        List<ProductionStockReservation> reservations = reservationRepo
+                .findByProductionOrderIdAndStockLotVariantIdOrderById(dto.getJobNo().trim(), dto.getVariantId());
+        if (reservations.isEmpty()) {
+            throw new IllegalArgumentException("This material was not issued to the selected production job.");
+        }
+
+        int returnableQuantity = reservations.stream()
+                .mapToInt(reservation -> Math.max(0,
+                        safeQuantity(reservation.getUsedQuantity()) - safeQuantity(reservation.getReturnedQuantity())))
+                .sum();
+        if (dto.getReturnedQty() > returnableQuantity) {
+            throw new IllegalArgumentException("Returned quantity exceeds the material issued and not already returned for this job.");
+        }
+
+        int remainingToAllocate = dto.getReturnedQty();
+        for (ProductionStockReservation reservation : reservations) {
+            int returnableFromReservation = Math.max(0,
+                    safeQuantity(reservation.getUsedQuantity()) - safeQuantity(reservation.getReturnedQuantity()));
+            int returnedFromReservation = Math.min(remainingToAllocate, returnableFromReservation);
+            if (returnedFromReservation == 0) continue;
+
+            reservation.setReturnedQuantity(safeQuantity(reservation.getReturnedQuantity()) + returnedFromReservation);
+            reservationRepo.save(reservation);
+            remainingToAllocate -= returnedFromReservation;
+            if (remainingToAllocate == 0) break;
+        }
+
         StockLots stockLot = new StockLots();
         stockLot.setVariant(variant);
         stockLot.setQuantity(dto.getReturnedQty());
@@ -306,6 +334,10 @@ public class InventoryService {
         stockLot.setCreatedAt(LocalDate.now());
 
         stockLotsRepo.save(stockLot);
+    }
+
+    private int safeQuantity(Integer quantity) {
+        return quantity == null ? 0 : quantity;
     }
 
     /** Consumes only stock already reserved for the production job. */
@@ -343,4 +375,3 @@ public class InventoryService {
     
 
 }
-

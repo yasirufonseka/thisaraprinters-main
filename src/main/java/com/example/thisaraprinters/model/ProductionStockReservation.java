@@ -24,4 +24,8 @@ public class ProductionStockReservation {
 
     @Column(name = "used_quantity", nullable = false)
     private Integer usedQuantity = 0;
+
+    /** Quantity returned to stock after having been issued to this production job. */
+    @Column(name = "returned_quantity", nullable = false)
+    private Integer returnedQuantity = 0;
 }
